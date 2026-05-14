@@ -101,7 +101,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Claim"
         "400":
-          $ref: "#/components/responses/ValidationOrInvalidClaimId"
+          $ref: "#/components/responses/ValidationInvalidClaimIdOrBusinessRule"
         "404":
           $ref: "#/components/responses/ClaimNotFound"
     delete:
@@ -174,7 +174,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Damage"
         "400":
-          $ref: "#/components/responses/ValidationOrInvalidClaimId"
+          $ref: "#/components/responses/ValidationInvalidClaimIdOrBusinessRule"
         "404":
           $ref: "#/components/responses/ClaimNotFound"
   /claims/{id}/damages/{damageId}:
@@ -220,7 +220,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Damage"
         "400":
-          $ref: "#/components/responses/ValidationOrInvalidClaimOrDamageId"
+          $ref: "#/components/responses/ValidationInvalidClaimOrDamageIdOrBusinessRule"
         "404":
           $ref: "#/components/responses/ClaimOrDamageNotFound"
     delete:
@@ -310,7 +310,7 @@ components:
           example: Low speed parking impact with visible rear bumper and trunk damage.
         status:
           type: string
-          enum: [Pending, In Review, Finished]
+          enum: [Pending, In Review, Finished, Canceled]
           example: In Review
     UpdateClaimRequest:
       type: object
@@ -327,7 +327,7 @@ components:
           example: Updated claim description
         status:
           type: string
-          enum: [Pending, In Review, Finished]
+          enum: [Pending, In Review, Finished, Canceled]
           example: Finished
     Damage:
       type: object
@@ -521,8 +521,24 @@ components:
             oneOf:
               - $ref: "#/components/schemas/ValidationError"
               - $ref: "#/components/schemas/ErrorMessage"
+    ValidationInvalidClaimIdOrBusinessRule:
+      description: Request body failed validation, claim ID is invalid, or a business rule blocked the operation
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/ValidationError"
+              - $ref: "#/components/schemas/ErrorMessage"
     ValidationOrInvalidClaimOrDamageId:
       description: Request body failed validation or one of the path IDs is invalid
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/ValidationError"
+              - $ref: "#/components/schemas/ErrorMessage"
+    ValidationInvalidClaimOrDamageIdOrBusinessRule:
+      description: Request body failed validation, an ID is invalid, or a business rule blocked the operation
       content:
         application/json:
           schema:

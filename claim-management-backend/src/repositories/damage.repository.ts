@@ -32,6 +32,9 @@ export function createDamageRepository() {
     deleteByClaimId(claimId: string) {
       return DamageModel.deleteMany({ claimId });
     },
+    hasHighSeverityByClaimId(claimId: string) {
+      return DamageModel.exists({ claimId, severity: "high" });
+    },
     async sumPricesByClaimId(claimId: string) {
       const [result] = await DamageModel.aggregate<{ totalAmount: number }>([
         { $match: { claimId: new mongoose.Types.ObjectId(claimId) } },

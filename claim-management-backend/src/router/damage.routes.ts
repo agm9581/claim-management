@@ -5,6 +5,7 @@ import {
 } from "../entities/validators/damage/damage.validator";
 import { validateBody } from "../middleware/type-validator.middleware";
 import type { DamageService } from "../services/damage.service";
+import { BusinessRuleError } from "../utils/business-rule-error";
 import { isValidObjectId } from "../utils/object-id";
 
 type DamageParams = { id: string; damageId: string };
@@ -63,14 +64,27 @@ export function createDamageRouter(damageService: DamageService) {
     "/",
     validateBody(createDamageSchema),
     async (req: Request<Pick<DamageParams, "id">>, res: Response) => {
-      const claim = await getClaimOrRespond(req.params.id, res);
+      try {
+        const claim = await getClaimOrRespond(req.params.id, res);
 
-      if (!claim) {
-        return;
+        if (!claim) {
+          return;
+        }
+
+        const damage = await damageService.createDamage(claim.id, req.body);
+
+        if (!damage) {
+          return res.status(404).json({ message: "Claim not found" });
+        }
+
+        res.status(201).json(damage);
+      } catch (error) {
+        if (error instanceof BusinessRuleError) {
+          return res.status(400).json({ message: error.message });
+        }
+
+        throw error;
       }
-
-      const damage = await damageService.createDamage(claim.id, req.body);
-      res.status(201).json(damage);
     },
   );
 
@@ -78,6 +92,40 @@ export function createDamageRouter(damageService: DamageService) {
     "/:damageId",
     validateBody(updateDamageSchema),
     async (req: Request<DamageParams>, res: Response) => {
+      try {
+        const claim = await getClaimOrRespond(req.params.id, res);
+
+        if (!claim) {
+          return;
+        }
+
+        if (!isValidObjectId(req.params.damageId)) {
+          return res.status(400).json({ message: "Invalid damage ID" });
+        }
+
+        const damage = await damageService.updateDamage(
+          claim.id,
+          req.params.damageId,
+          req.body,
+        );
+
+        if (!damage) {
+          return res.status(404).json({ message: "Damage not found" });
+        }
+
+        res.status(200).json(damage);
+      } catch (error) {
+        if (error instanceof BusinessRuleError) {
+          return res.status(400).json({ message: error.message });
+        }
+
+        throw error;
+      }
+    },
+  );
+
+  router.delete("/:damageId", async (req: Request<DamageParams>, res: Response) => {
+    try {
       const claim = await getClaimOrRespond(req.params.id, res);
 
       if (!claim) {
@@ -88,38 +136,20 @@ export function createDamageRouter(damageService: DamageService) {
         return res.status(400).json({ message: "Invalid damage ID" });
       }
 
-      const damage = await damageService.updateDamage(
-        claim.id,
-        req.params.damageId,
-        req.body,
-      );
+      const damage = await damageService.deleteDamage(claim.id, req.params.damageId);
 
       if (!damage) {
         return res.status(404).json({ message: "Damage not found" });
       }
 
-      res.status(200).json(damage);
-    },
-  );
+      res.status(204).send();
+    } catch (error) {
+      if (error instanceof BusinessRuleError) {
+        return res.status(400).json({ message: error.message });
+      }
 
-  router.delete("/:damageId", async (req: Request<DamageParams>, res: Response) => {
-    const claim = await getClaimOrRespond(req.params.id, res);
-
-    if (!claim) {
-      return;
+      throw error;
     }
-
-    if (!isValidObjectId(req.params.damageId)) {
-      return res.status(400).json({ message: "Invalid damage ID" });
-    }
-
-    const damage = await damageService.deleteDamage(claim.id, req.params.damageId);
-
-    if (!damage) {
-      return res.status(404).json({ message: "Damage not found" });
-    }
-
-    res.status(204).send();
   });
 
   return router;

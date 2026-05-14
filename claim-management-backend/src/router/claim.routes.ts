@@ -5,6 +5,7 @@ import {
 } from "../entities/validators/claim/claim.validator";
 import { validateBody } from "../middleware/type-validator.middleware";
 import type { ClaimService } from "../services/claim.service";
+import { BusinessRuleError } from "../utils/business-rule-error";
 import { isValidObjectId } from "../utils/object-id";
 
 type ClaimParams = { id: string };
@@ -44,17 +45,25 @@ export function createClaimRouter(claimService: ClaimService) {
     "/:id",
     validateBody(updateClaimSchema),
     async (req: Request<ClaimParams>, res: Response) => {
-      if (!isValidObjectId(req.params.id)) {
-        return res.status(400).json({ message: "Invalid claim ID" });
+      try {
+        if (!isValidObjectId(req.params.id)) {
+          return res.status(400).json({ message: "Invalid claim ID" });
+        }
+
+        const claim = await claimService.updateClaim(req.params.id, req.body);
+
+        if (!claim) {
+          return res.status(404).json({ message: "Claim not found" });
+        }
+
+        res.status(200).json(claim);
+      } catch (error) {
+        if (error instanceof BusinessRuleError) {
+          return res.status(400).json({ message: error.message });
+        }
+
+        throw error;
       }
-
-      const claim = await claimService.updateClaim(req.params.id, req.body);
-
-      if (!claim) {
-        return res.status(404).json({ message: "Claim not found" });
-      }
-
-      res.status(200).json(claim);
     },
   );
 

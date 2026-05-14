@@ -6,6 +6,7 @@ import type {
   CreateDamageInput,
   UpdateDamageInput,
 } from "../entities/validators/damage/damage.validator";
+import { BusinessRuleError } from "../utils/business-rule-error";
 
 function createClaimRepositoryMock(): jest.Mocked<ClaimRepository> {
   return {
@@ -26,6 +27,7 @@ function createDamageRepositoryMock(): jest.Mocked<DamageRepository> {
     updateByIdAndClaimId: jest.fn(),
     deleteByIdAndClaimId: jest.fn(),
     deleteByClaimId: jest.fn(),
+    hasHighSeverityByClaimId: jest.fn(),
     sumPricesByClaimId: jest.fn(),
   };
 }
@@ -87,6 +89,7 @@ describe("createDamageService", () => {
   it("creates a damage and syncs the claim total amount", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
     const createdDamage = { _id: damageId, claimId, ...createDamageInput };
     damageRepository.createForClaim.mockResolvedValue(createdDamage as never);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1270);
@@ -104,6 +107,7 @@ describe("createDamageService", () => {
   it("updates a damage and syncs the claim total amount when the damage exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
     const updatedDamage = { _id: damageId, claimId, ...updateDamageInput };
     damageRepository.updateByIdAndClaimId.mockResolvedValue(updatedDamage as never);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1340);
@@ -125,6 +129,7 @@ describe("createDamageService", () => {
   it("does not sync the claim total amount when an update misses the damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
     damageRepository.updateByIdAndClaimId.mockResolvedValue(null);
 
     const service = createDamageService(claimRepository, damageRepository);
@@ -143,6 +148,7 @@ describe("createDamageService", () => {
   it("deletes a damage and syncs the claim total amount when the damage exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
     const deletedDamage = { _id: damageId, claimId };
     damageRepository.deleteByIdAndClaimId.mockResolvedValue(deletedDamage as never);
     damageRepository.sumPricesByClaimId.mockResolvedValue(420);
@@ -160,6 +166,7 @@ describe("createDamageService", () => {
   it("does not sync the claim total amount when a delete misses the damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
     damageRepository.deleteByIdAndClaimId.mockResolvedValue(null);
 
     const service = createDamageService(claimRepository, damageRepository);
@@ -169,5 +176,56 @@ describe("createDamageService", () => {
     expect(damageRepository.sumPricesByClaimId).not.toHaveBeenCalled();
     expect(claimRepository.updateTotalAmount).not.toHaveBeenCalled();
     expect(damage).toBeNull();
+  });
+
+  it("returns null when creating a damage for a missing claim", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue(null);
+
+    const service = createDamageService(claimRepository, damageRepository);
+    const damage = await service.createDamage(claimId, createDamageInput);
+
+    expect(damageRepository.createForClaim).not.toHaveBeenCalled();
+    expect(damage).toBeNull();
+  });
+
+  it("rejects damage creation when the claim is not pending", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Finished" } as never);
+
+    const service = createDamageService(claimRepository, damageRepository);
+
+    await expect(service.createDamage(claimId, createDamageInput)).rejects.toThrow(
+      new BusinessRuleError("Damages can only be managed while the claim is pending"),
+    );
+    expect(damageRepository.createForClaim).not.toHaveBeenCalled();
+  });
+
+  it("rejects damage updates when the claim is not pending", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "In Review" } as never);
+
+    const service = createDamageService(claimRepository, damageRepository);
+
+    await expect(service.updateDamage(claimId, damageId, updateDamageInput)).rejects.toThrow(
+      new BusinessRuleError("Damages can only be managed while the claim is pending"),
+    );
+    expect(damageRepository.updateByIdAndClaimId).not.toHaveBeenCalled();
+  });
+
+  it("rejects damage deletion when the claim is not pending", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Canceled" } as never);
+
+    const service = createDamageService(claimRepository, damageRepository);
+
+    await expect(service.deleteDamage(claimId, damageId)).rejects.toThrow(
+      new BusinessRuleError("Damages can only be managed while the claim is pending"),
+    );
+    expect(damageRepository.deleteByIdAndClaimId).not.toHaveBeenCalled();
   });
 });
