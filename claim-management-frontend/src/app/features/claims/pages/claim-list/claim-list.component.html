@@ -1,0 +1,61 @@
+<section class="d-flex flex-column gap-4">
+  <header class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3">
+    <div>
+      <p class="text-uppercase text-secondary fw-semibold mb-2 small">Claims Console</p>
+      <h1 class="display-6 fw-semibold mb-2">Claim List</h1>
+      <p class="text-secondary mb-0">
+        Review submitted claims and open each record to manage its damages.
+      </p>
+    </div>
+    <div class="rounded-4 border bg-white px-4 py-3 shadow-sm">
+      <div class="text-secondary small">Loaded claims</div>
+      <div class="fs-3 fw-semibold">{{ claims().length }}</div>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="card">
+      <div class="card-body py-5 text-center text-secondary">Loading claims...</div>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="alert alert-danger mb-0" role="alert">{{ errorMessage() }}</div>
+  } @else if (!claims().length) {
+    <div class="card">
+      <div class="card-body py-5 text-center text-secondary">
+        No claims were found in the backend.
+      </div>
+    </div>
+  } @else {
+    <div class="row g-4">
+      @for (claim of claims(); track trackByClaimId($index, claim)) {
+        <div class="col-12 col-xl-6">
+          <article class="card h-100 claim-card">
+            <div class="card-body p-4 d-flex flex-column gap-3">
+              <div class="d-flex align-items-start justify-content-between gap-3">
+                <div>
+                  <h2 class="h4 mb-1">{{ claim.title }}</h2>
+                  <p class="text-secondary mb-0 small">ID: {{ claim._id }}</p>
+                </div>
+                <span class="badge rounded-pill" [class]="statusBadgeClass(claim.status)">
+                  {{ claim.status }}
+                </span>
+              </div>
+
+              <p class="text-secondary mb-0">{{ claim.description }}</p>
+
+              <div class="d-flex justify-content-between align-items-center border rounded-4 p-3 bg-body-tertiary">
+                <div>
+                  <div class="text-secondary small">Total amount</div>
+                  <div class="fs-4 fw-semibold">{{ formatCurrency(claim.totalAmount) }}</div>
+                </div>
+                <a class="btn btn-primary px-4" [routerLink]="['/claims', claim._id]">
+                  View details
+                </a>
+              </div>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  }
+</section>

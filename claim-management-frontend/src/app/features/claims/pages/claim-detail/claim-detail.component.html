@@ -1,0 +1,297 @@
+@if (loading()) {
+  <div class="card">
+    <div class="card-body py-5 text-center text-secondary">Loading claim detail...</div>
+  </div>
+} @else if (loadErrorMessage()) {
+  <div class="alert alert-danger" role="alert">{{ loadErrorMessage() }}</div>
+} @else if (claim(); as activeClaim) {
+  <section class="d-flex flex-column gap-4">
+    <div class="d-flex flex-column flex-xl-row align-items-xl-start justify-content-between gap-3">
+      <div>
+        <a class="text-decoration-none small fw-semibold" routerLink="/claims">← Back to claims</a>
+        <h1 class="display-6 fw-semibold mt-2 mb-2">{{ activeClaim.title }}</h1>
+        <p class="text-secondary mb-0 detail-copy">{{ activeClaim.description }}</p>
+      </div>
+
+      <div class="d-flex flex-column align-items-xl-end gap-2">
+        <span class="badge rounded-pill fs-6" [class]="statusBadgeClass(activeClaim.status)">
+          {{ activeClaim.status }}
+        </span>
+        <div class="text-secondary small">Live total from visible damages</div>
+        <div class="display-6 fw-semibold text-primary-emphasis">
+          {{ formatCurrency(totalAmount()) }}
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-12 col-xl-8">
+        <div class="card mb-4">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+              <div>
+                <h2 class="h4 mb-1">Claim workflow</h2>
+                <p class="text-secondary mb-0">
+                  Update the claim description and status. Backend rules control which transitions are accepted.
+                </p>
+              </div>
+            </div>
+
+            <form [formGroup]="claimForm" (ngSubmit)="submitClaim()" class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="claimTitle">Title</label>
+                <input
+                  id="claimTitle"
+                  type="text"
+                  class="form-control"
+                  formControlName="title"
+                  [class.is-invalid]="claimForm.controls.title.invalid && claimForm.controls.title.touched"
+                />
+                <div class="invalid-feedback">Title is required and cannot exceed 120 characters.</div>
+              </div>
+
+              <div>
+                <label class="form-label" for="claimDescription">Description</label>
+                <textarea
+                  id="claimDescription"
+                  rows="4"
+                  class="form-control"
+                  formControlName="description"
+                  [class.is-invalid]="claimForm.controls.description.invalid && claimForm.controls.description.touched"
+                ></textarea>
+                <div class="invalid-feedback">
+                  Description is required. Finished claims with high-severity damage need more than 100 characters.
+                </div>
+              </div>
+
+              <div>
+                <label class="form-label" for="claimStatus">Status</label>
+                <select
+                  id="claimStatus"
+                  class="form-select"
+                  formControlName="status"
+                  [class.is-invalid]="claimForm.controls.status.invalid && claimForm.controls.status.touched"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="In Review">In Review</option>
+                  <option value="Finished">Finished</option>
+                  <option value="Canceled">Canceled</option>
+                </select>
+                <div class="invalid-feedback">Status is required.</div>
+              </div>
+
+              @if (claimErrorMessage()) {
+                <div class="alert alert-danger mb-0">{{ claimErrorMessage() }}</div>
+              }
+
+              <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-dark px-4" [disabled]="claimSaving()">
+                  @if (claimSaving()) {
+                    Saving claim...
+                  } @else {
+                    Save claim
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="card h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 class="h4 mb-1">Damages</h2>
+                <p class="text-secondary mb-0">
+                  All damages linked to this claim. The visible total updates as the table changes.
+                </p>
+              </div>
+              <span class="badge text-bg-dark rounded-pill">{{ damages().length }} items</span>
+            </div>
+
+            @if (!damages().length) {
+              <div class="border rounded-4 p-4 text-center text-secondary">
+                No damages have been created for this claim yet.
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr class="text-secondary">
+                      <th>Part</th>
+                      <th>Severity</th>
+                      <th>Score</th>
+                      <th>Price</th>
+                      <th>Image</th>
+                      <th class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (damage of damages(); track trackByDamageId($index, damage)) {
+                      <tr>
+                        <td class="fw-semibold">{{ damage.part }}</td>
+                        <td>
+                          <span class="badge rounded-pill" [class]="severityBadgeClass(damage.severity)">
+                            {{ damage.severity }}
+                          </span>
+                        </td>
+                        <td>{{ damage.score }}/10</td>
+                        <td>{{ formatCurrency(damage.price) }}</td>
+                        <td>
+                          <a [href]="damage.imageUrl" class="link-primary" target="_blank" rel="noopener">
+                            Open image
+                          </a>
+                        </td>
+                        <td class="text-end">
+                          <div class="btn-group btn-group-sm">
+                            <button
+                              type="button"
+                              class="btn btn-outline-primary"
+                              (click)="startEdit(damage)"
+                              [disabled]="!canManageDamages() || damageSaving()"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              class="btn btn-outline-danger"
+                              (click)="deleteDamage(damage._id)"
+                              [disabled]="!canManageDamages() || damageSaving()"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12 col-xl-4">
+        <div class="card h-100">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+              <div>
+                <h2 class="h4 mb-1">
+                  @if (isEditMode) {
+                    Edit damage
+                  } @else {
+                    Add damage
+                  }
+                </h2>
+                <p class="text-secondary mb-0">
+                  All fields are required. Damage editing is enabled only while the claim is pending.
+                </p>
+              </div>
+            </div>
+
+            @if (!canManageDamages()) {
+              <div class="alert alert-warning">
+                This claim is not in <strong>Pending</strong> status, so damages are read-only.
+              </div>
+            }
+
+            <form [formGroup]="damageForm" (ngSubmit)="submitDamage()" class="d-flex flex-column gap-3">
+              <div>
+                <label class="form-label" for="part">Part</label>
+                <input
+                  id="part"
+                  type="text"
+                  class="form-control"
+                  formControlName="part"
+                  [class.is-invalid]="damageForm.controls.part.invalid && damageForm.controls.part.touched"
+                />
+                <div class="invalid-feedback">Part is required and cannot exceed 120 characters.</div>
+              </div>
+
+              <div>
+                <label class="form-label" for="severity">Severity</label>
+                <select
+                  id="severity"
+                  class="form-select"
+                  formControlName="severity"
+                  [class.is-invalid]="damageForm.controls.severity.invalid && damageForm.controls.severity.touched"
+                >
+                  <option value="low">low</option>
+                  <option value="mid">mid</option>
+                  <option value="high">high</option>
+                </select>
+                <div class="invalid-feedback">Severity is required.</div>
+              </div>
+
+              <div>
+                <label class="form-label" for="imageUrl">Image URL</label>
+                <input
+                  id="imageUrl"
+                  type="url"
+                  class="form-control"
+                  formControlName="imageUrl"
+                  [class.is-invalid]="damageForm.controls.imageUrl.invalid && damageForm.controls.imageUrl.touched"
+                />
+                <div class="invalid-feedback">A valid image URL is required.</div>
+              </div>
+
+              <div class="row g-3">
+                <div class="col-6">
+                  <label class="form-label" for="price">Price</label>
+                  <input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    class="form-control"
+                    formControlName="price"
+                    [class.is-invalid]="damageForm.controls.price.invalid && damageForm.controls.price.touched"
+                  />
+                  <div class="invalid-feedback">Price is required and must be 0 or greater.</div>
+                </div>
+
+                <div class="col-6">
+                  <label class="form-label" for="score">Score</label>
+                  <input
+                    id="score"
+                    type="number"
+                    min="1"
+                    max="10"
+                    step="1"
+                    class="form-control"
+                    formControlName="score"
+                    [class.is-invalid]="damageForm.controls.score.invalid && damageForm.controls.score.touched"
+                  />
+                  <div class="invalid-feedback">Score must be between 1 and 10.</div>
+                </div>
+              </div>
+
+              @if (damageErrorMessage()) {
+                <div class="alert alert-danger mb-0">{{ damageErrorMessage() }}</div>
+              }
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1" [disabled]="damageSaving() || !canManageDamages()">
+                  @if (damageSaving()) {
+                    Saving...
+                  } @else if (isEditMode) {
+                    Update damage
+                  } @else {
+                    Create damage
+                  }
+                </button>
+
+                @if (isEditMode) {
+                  <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()" [disabled]="damageSaving()">
+                    Cancel
+                  </button>
+                }
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+}
