@@ -1,17 +1,8 @@
 import { z } from "zod";
-import mongoose from "mongoose";
 import { DamageSeverity } from "../../models/damage/damage.model";
-
-const objectIdSchema = z
-  .string()
-  .refine((value) => mongoose.Types.ObjectId.isValid(value), {
-    message: "Invalid claim ID",
-  });
 
 export const createDamageSchema = z
   .object({
-    claimId: objectIdSchema,
-
     part: z
       .string()
       .trim()
@@ -35,7 +26,6 @@ export const createDamageSchema = z
   .strict();
 
 export const updateDamageSchema = createDamageSchema
-  .omit({ claimId: true })
   .partial()
   .strict()
   .refine((data) => Object.keys(data).length > 0, {
