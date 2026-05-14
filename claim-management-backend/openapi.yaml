@@ -1,0 +1,531 @@
+openapi: 3.0.3
+info:
+  title: Claim Management API
+  version: 1.0.0
+  description: |
+    OpenAPI specification for the claim management backend.
+    Damages are nested under claims and inherit `claimId` from the parent route.
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+tags:
+  - name: Claims
+  - name: Damages
+paths:
+  /claims:
+    get:
+      tags: [Claims]
+      summary: List claims
+      operationId: listClaims
+      responses:
+        "200":
+          description: Claims returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Claim"
+              examples:
+                default:
+                  value:
+                    - _id: 6824d4d8c6f0c3a59748df11
+                      title: Rear bumper collision
+                      description: Low speed parking impact with visible rear bumper and trunk damage.
+                      status: In Review
+                      totalAmount: 1270
+                      createdAt: "2026-05-14T10:00:00.000Z"
+                      updatedAt: "2026-05-14T10:00:00.000Z"
+    post:
+      tags: [Claims]
+      summary: Create claim
+      operationId: createClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClaimRequest"
+            examples:
+              default:
+                value:
+                  title: Rear bumper collision
+                  description: Low speed parking impact with visible rear bumper and trunk damage.
+                  status: In Review
+      responses:
+        "201":
+          description: Claim created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Claim"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+  /claims/{id}:
+    parameters:
+      - $ref: "#/components/parameters/ClaimId"
+    get:
+      tags: [Claims]
+      summary: Get claim by ID
+      operationId: getClaim
+      responses:
+        "200":
+          description: Claim returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Claim"
+        "400":
+          $ref: "#/components/responses/InvalidClaimId"
+        "404":
+          $ref: "#/components/responses/ClaimNotFound"
+    patch:
+      tags: [Claims]
+      summary: Update claim
+      operationId: updateClaim
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateClaimRequest"
+            examples:
+              default:
+                value:
+                  status: Finished
+      responses:
+        "200":
+          description: Claim updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Claim"
+        "400":
+          $ref: "#/components/responses/ValidationOrInvalidClaimId"
+        "404":
+          $ref: "#/components/responses/ClaimNotFound"
+    delete:
+      tags: [Claims]
+      summary: Delete claim and its damages
+      operationId: deleteClaim
+      responses:
+        "204":
+          description: Claim deleted successfully
+        "400":
+          $ref: "#/components/responses/InvalidClaimId"
+        "404":
+          $ref: "#/components/responses/ClaimNotFound"
+  /claims/{id}/damages:
+    parameters:
+      - $ref: "#/components/parameters/ClaimId"
+    get:
+      tags: [Damages]
+      summary: List damages for a claim
+      operationId: listDamages
+      responses:
+        "200":
+          description: Damages returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Damage"
+              examples:
+                default:
+                  value:
+                    - _id: 6824d4d8c6f0c3a59748df21
+                      claimId: 6824d4d8c6f0c3a59748df11
+                      part: Rear bumper
+                      severity: mid
+                      imageUrl: https://images.example.com/claims/rear-bumper.jpg
+                      price: 850
+                      score: 6
+                      createdAt: "2026-05-14T10:00:00.000Z"
+                      updatedAt: "2026-05-14T10:00:00.000Z"
+        "400":
+          $ref: "#/components/responses/InvalidClaimId"
+        "404":
+          $ref: "#/components/responses/ClaimNotFound"
+    post:
+      tags: [Damages]
+      summary: Create damage for a claim
+      operationId: createDamage
+      description: The `claimId` is derived from the parent route and must not be sent in the request body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDamageRequest"
+            examples:
+              default:
+                value:
+                  part: Rear bumper
+                  severity: mid
+                  imageUrl: https://images.example.com/claims/rear-bumper.jpg
+                  price: 850
+                  score: 6
+      responses:
+        "201":
+          description: Damage created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Damage"
+        "400":
+          $ref: "#/components/responses/ValidationOrInvalidClaimId"
+        "404":
+          $ref: "#/components/responses/ClaimNotFound"
+  /claims/{id}/damages/{damageId}:
+    parameters:
+      - $ref: "#/components/parameters/ClaimId"
+      - $ref: "#/components/parameters/DamageId"
+    get:
+      tags: [Damages]
+      summary: Get damage by ID for a claim
+      operationId: getDamage
+      responses:
+        "200":
+          description: Damage returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Damage"
+        "400":
+          $ref: "#/components/responses/InvalidClaimOrDamageId"
+        "404":
+          $ref: "#/components/responses/ClaimOrDamageNotFound"
+    patch:
+      tags: [Damages]
+      summary: Update damage for a claim
+      operationId: updateDamage
+      description: The `claimId` is derived from the parent route and cannot be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDamageRequest"
+            examples:
+              default:
+                value:
+                  price: 920
+                  score: 7
+      responses:
+        "200":
+          description: Damage updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Damage"
+        "400":
+          $ref: "#/components/responses/ValidationOrInvalidClaimOrDamageId"
+        "404":
+          $ref: "#/components/responses/ClaimOrDamageNotFound"
+    delete:
+      tags: [Damages]
+      summary: Delete damage for a claim
+      operationId: deleteDamage
+      responses:
+        "204":
+          description: Damage deleted successfully
+        "400":
+          $ref: "#/components/responses/InvalidClaimOrDamageId"
+        "404":
+          $ref: "#/components/responses/ClaimOrDamageNotFound"
+components:
+  parameters:
+    ClaimId:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId of the claim
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{24}$"
+      example: 6824d4d8c6f0c3a59748df11
+    DamageId:
+      name: damageId
+      in: path
+      required: true
+      description: MongoDB ObjectId of the damage
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{24}$"
+      example: 6824d4d8c6f0c3a59748df21
+  schemas:
+    Claim:
+      type: object
+      required:
+        - _id
+        - title
+        - description
+        - status
+        - totalAmount
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          example: 6824d4d8c6f0c3a59748df11
+        title:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Rear bumper collision
+        description:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          example: Low speed parking impact with visible rear bumper and trunk damage.
+        status:
+          type: string
+          enum: [Pending, In Review, Finished]
+          example: In Review
+        totalAmount:
+          type: number
+          minimum: 0
+          example: 1270
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateClaimRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Rear bumper collision
+        description:
+          type: string
+          minLength: 1
+          example: Low speed parking impact with visible rear bumper and trunk damage.
+        status:
+          type: string
+          enum: [Pending, In Review, Finished]
+          example: In Review
+    UpdateClaimRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Updated claim title
+        description:
+          type: string
+          minLength: 1
+          example: Updated claim description
+        status:
+          type: string
+          enum: [Pending, In Review, Finished]
+          example: Finished
+    Damage:
+      type: object
+      required:
+        - _id
+        - claimId
+        - part
+        - severity
+        - imageUrl
+        - price
+        - score
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          example: 6824d4d8c6f0c3a59748df21
+        claimId:
+          type: string
+          example: 6824d4d8c6f0c3a59748df11
+        part:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Rear bumper
+        severity:
+          type: string
+          enum: [low, mid, high]
+          example: mid
+        imageUrl:
+          type: string
+          format: uri
+          example: https://images.example.com/claims/rear-bumper.jpg
+        price:
+          type: number
+          minimum: 0
+          example: 850
+        score:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 6
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    CreateDamageRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - part
+        - severity
+        - imageUrl
+        - price
+        - score
+      properties:
+        part:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Rear bumper
+        severity:
+          type: string
+          enum: [low, mid, high]
+          example: mid
+        imageUrl:
+          type: string
+          format: uri
+          example: https://images.example.com/claims/rear-bumper.jpg
+        price:
+          type: number
+          minimum: 0
+          example: 850
+        score:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 6
+    UpdateDamageRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        part:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Trunk lid
+        severity:
+          type: string
+          enum: [low, mid, high]
+          example: low
+        imageUrl:
+          type: string
+          format: uri
+          example: https://images.example.com/claims/trunk-lid.jpg
+        price:
+          type: number
+          minimum: 0
+          example: 420
+        score:
+          type: integer
+          minimum: 1
+          maximum: 10
+          example: 4
+    ErrorMessage:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+    ValidationError:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          example: Validation failed
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            title:
+              - Title is required
+  responses:
+    ValidationError:
+      description: Request body failed validation
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationError"
+    InvalidClaimId:
+      description: Claim ID is not a valid MongoDB ObjectId
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            default:
+              value:
+                message: Invalid claim ID
+    InvalidClaimOrDamageId:
+      description: Claim ID or damage ID is not a valid MongoDB ObjectId
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            invalidClaim:
+              value:
+                message: Invalid claim ID
+            invalidDamage:
+              value:
+                message: Invalid damage ID
+    ClaimNotFound:
+      description: Claim was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            default:
+              value:
+                message: Claim not found
+    ClaimOrDamageNotFound:
+      description: Claim or damage was not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorMessage"
+          examples:
+            missingClaim:
+              value:
+                message: Claim not found
+            missingDamage:
+              value:
+                message: Damage not found
+    ValidationOrInvalidClaimId:
+      description: Request body failed validation or claim ID is invalid
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/ValidationError"
+              - $ref: "#/components/schemas/ErrorMessage"
+    ValidationOrInvalidClaimOrDamageId:
+      description: Request body failed validation or one of the path IDs is invalid
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: "#/components/schemas/ValidationError"
+              - $ref: "#/components/schemas/ErrorMessage"

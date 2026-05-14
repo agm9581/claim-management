@@ -6,7 +6,7 @@ import { seedDevelopmentData } from "./seeds/dev.seed";
 
 const app = createApp();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI ?? process.env.MONGO_URI;
 const isDevSeedMode = process.argv.includes("--dev-seed");
 
 async function connectExternalMongo() {
