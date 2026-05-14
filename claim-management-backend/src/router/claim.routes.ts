@@ -1,83 +1,76 @@
 import { Router, Request, Response } from "express";
-import mongoose from "mongoose";
-import { ClaimModel } from "../entities/models/claim/claim.model";
-import { DamageModel } from "../entities/models/damage/damage.model";
 import {
   createClaimSchema,
   updateClaimSchema,
 } from "../entities/validators/claim/claim.validator";
 import { validateBody } from "../middleware/type-validator.middleware";
+import type { ClaimService } from "../services/claim.service";
+import { isValidObjectId } from "../utils/object-id";
 
-const ClaimRouter = Router();
 type ClaimParams = { id: string };
 
-function isValidObjectId(value: string) {
-  return mongoose.Types.ObjectId.isValid(value);
-}
+export function createClaimRouter(claimService: ClaimService) {
+  const router = Router();
 
-ClaimRouter.get("/", async (_req: Request, res: Response) => {
-  const claims = await ClaimModel.find().sort({ createdAt: -1 });
-  res.status(200).json(claims);
-});
+  router.get("/", async (_req: Request, res: Response) => {
+    const claims = await claimService.listClaims();
+    res.status(200).json(claims);
+  });
 
-ClaimRouter.get("/:id", async (req: Request<ClaimParams>, res: Response) => {
-  if (!isValidObjectId(req.params.id)) {
-    return res.status(400).json({ message: "Invalid claim ID" });
-  }
-
-  const claim = await ClaimModel.findById(req.params.id);
-
-  if (!claim) {
-    return res.status(404).json({ message: "Claim not found" });
-  }
-
-  res.status(200).json(claim);
-});
-
-ClaimRouter.post(
-  "/",
-  validateBody(createClaimSchema),
-  async (req: Request, res: Response) => {
-    const claim = await ClaimModel.create(req.body);
-    res.status(201).json(claim);
-  },
-);
-
-ClaimRouter.patch(
-  "/:id",
-  validateBody(updateClaimSchema),
-  async (req: Request<ClaimParams>, res: Response) => {
+  router.get("/:id", async (req: Request<ClaimParams>, res: Response) => {
     if (!isValidObjectId(req.params.id)) {
       return res.status(400).json({ message: "Invalid claim ID" });
     }
 
-    const claim = await ClaimModel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const claim = await claimService.getClaimById(req.params.id);
 
     if (!claim) {
       return res.status(404).json({ message: "Claim not found" });
     }
 
     res.status(200).json(claim);
-  },
-);
+  });
 
-ClaimRouter.delete("/:id", async (req: Request<ClaimParams>, res: Response) => {
-  if (!isValidObjectId(req.params.id)) {
-    return res.status(400).json({ message: "Invalid claim ID" });
-  }
+  router.post(
+    "/",
+    validateBody(createClaimSchema),
+    async (req: Request, res: Response) => {
+      const claim = await claimService.createClaim(req.body);
+      res.status(201).json(claim);
+    },
+  );
 
-  const claim = await ClaimModel.findByIdAndDelete(req.params.id);
+  router.patch(
+    "/:id",
+    validateBody(updateClaimSchema),
+    async (req: Request<ClaimParams>, res: Response) => {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid claim ID" });
+      }
 
-  if (!claim) {
-    return res.status(404).json({ message: "Claim not found" });
-  }
+      const claim = await claimService.updateClaim(req.params.id, req.body);
 
-  await DamageModel.deleteMany({ claimId: req.params.id });
+      if (!claim) {
+        return res.status(404).json({ message: "Claim not found" });
+      }
 
-  res.status(204).send();
-});
+      res.status(200).json(claim);
+    },
+  );
 
-export default ClaimRouter;
+  router.delete("/:id", async (req: Request<ClaimParams>, res: Response) => {
+    if (!isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid claim ID" });
+    }
+
+    const claim = await claimService.deleteClaim(req.params.id);
+
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+
+    res.status(204).send();
+  });
+
+  return router;
+}

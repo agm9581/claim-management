@@ -1,10 +1,12 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { createDependencies } from "./dependencies";
 import { createApp } from "./app";
 import { seedDevelopmentData } from "./seeds/dev.seed";
 
-const app = createApp();
+const dependencies = createDependencies();
+const app = createApp(dependencies);
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI ?? process.env.MONGO_URI;
 const isDevSeedMode = process.argv.includes("--dev-seed");
