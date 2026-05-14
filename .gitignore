@@ -1,2 +1,4 @@
 node_modules
 .env
+coverage/
+claim-management-backend/coverage/
