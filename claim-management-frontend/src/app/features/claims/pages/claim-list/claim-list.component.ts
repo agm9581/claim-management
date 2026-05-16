@@ -13,19 +13,19 @@ import { Claim } from '../../../../types/claim.types';
 export class ClaimListComponent implements OnInit {
   private readonly claimApiService = inject(ClaimApiService);
 
-  protected readonly claims = signal<Claim[]>([]);
-  protected readonly loading = signal(true);
-  protected readonly errorMessage = signal<string | null>(null);
+  public readonly claims = signal<Claim[]>([]);
+  public readonly loading = signal(true);
+  public readonly errorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadClaims();
   }
 
-  protected trackByClaimId(_: number, claim: Claim): string {
+  public trackByClaimId(_: number, claim: Claim): string {
     return claim._id;
   }
 
-  protected statusBadgeClass(status: Claim['status']): string {
+  public statusBadgeClass(status: Claim['status']): string {
     if (status === 'Finished') {
       return 'text-bg-success';
     }
@@ -37,7 +37,7 @@ export class ClaimListComponent implements OnInit {
     return 'text-bg-secondary';
   }
 
-  protected formatCurrency(amount: number): string {
+  public formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'

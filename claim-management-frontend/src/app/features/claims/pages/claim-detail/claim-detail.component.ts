@@ -56,29 +56,29 @@ export class ClaimDetailComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly claim = signal<Claim | null>(null);
-  protected readonly damages = signal<Damage[]>([]);
-  protected readonly loading = signal(true);
-  protected readonly claimSaving = signal(false);
-  protected readonly damageSaving = signal(false);
-  protected readonly loadErrorMessage = signal<string | null>(null);
-  protected readonly claimErrorMessage = signal<string | null>(null);
-  protected readonly damageErrorMessage = signal<string | null>(null);
-  protected readonly editingDamageId = signal<string | null>(null);
+  public readonly claim = signal<Claim | null>(null);
+  public readonly damages = signal<Damage[]>([]);
+  public readonly loading = signal(true);
+  public readonly claimSaving = signal(false);
+  public readonly damageSaving = signal(false);
+  public readonly loadErrorMessage = signal<string | null>(null);
+  public readonly claimErrorMessage = signal<string | null>(null);
+  public readonly damageErrorMessage = signal<string | null>(null);
+  public readonly editingDamageId = signal<string | null>(null);
 
-  protected readonly totalAmount = computed(() =>
+  public readonly totalAmount = computed(() =>
     this.damages().reduce((sum, damage) => sum + damage.price, 0)
   );
 
-  protected readonly canManageDamages = computed(() => this.claim()?.status === 'Pending');
+  public readonly canManageDamages = computed(() => this.claim()?.status === 'Pending');
 
-  protected readonly claimForm = this.formBuilder.nonNullable.group({
+  public readonly claimForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(2000)]],
     status: ['Pending' as ClaimStatus, [Validators.required]]
   });
 
-  protected readonly damageForm = this.formBuilder.nonNullable.group({
+  public readonly damageForm = this.formBuilder.nonNullable.group({
     part: ['', [Validators.required, Validators.maxLength(120)]],
     severity: ['low' as DamageSeverity, [Validators.required]],
     imageUrl: ['', [Validators.required, Validators.pattern(imageUrlPattern)]],
@@ -121,15 +121,15 @@ export class ClaimDetailComponent implements OnInit {
       });
   }
 
-  protected get isEditMode(): boolean {
+  public get isEditMode(): boolean {
     return this.editingDamageId() !== null;
   }
 
-  protected trackByDamageId(_: number, damage: Damage): string {
+  public trackByDamageId(_: number, damage: Damage): string {
     return damage._id;
   }
 
-  protected submitClaim(): void {
+  public submitClaim(): void {
     const claim = this.claim();
 
     if (!claim) {
@@ -160,7 +160,7 @@ export class ClaimDetailComponent implements OnInit {
       });
   }
 
-  protected startEdit(damage: Damage): void {
+  public startEdit(damage: Damage): void {
     if (!this.canManageDamages()) {
       return;
     }
@@ -174,11 +174,11 @@ export class ClaimDetailComponent implements OnInit {
     });
   }
 
-  protected cancelEdit(): void {
+  public cancelEdit(): void {
     this.resetForm();
   }
 
-  protected submitDamage(): void {
+  public submitDamage(): void {
     if (!this.canManageDamages()) {
       return;
     }
@@ -243,7 +243,7 @@ export class ClaimDetailComponent implements OnInit {
       });
   }
 
-  protected deleteDamage(damageId: string): void {
+  public deleteDamage(damageId: string): void {
     const claim = this.claim();
 
     if (!claim || !this.canManageDamages()) {
@@ -274,7 +274,7 @@ export class ClaimDetailComponent implements OnInit {
       });
   }
 
-  protected severityBadgeClass(severity: DamageSeverity): string {
+  public severityBadgeClass(severity: DamageSeverity): string {
     if (severity === 'high') {
       return 'text-bg-danger';
     }
@@ -286,7 +286,7 @@ export class ClaimDetailComponent implements OnInit {
     return 'text-bg-info';
   }
 
-  protected statusBadgeClass(status: Claim['status']): string {
+  public statusBadgeClass(status: Claim['status']): string {
     if (status === 'Finished') {
       return 'text-bg-success';
     }
@@ -298,7 +298,7 @@ export class ClaimDetailComponent implements OnInit {
     return 'text-bg-secondary';
   }
 
-  protected formatCurrency(amount: number): string {
+  public formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
