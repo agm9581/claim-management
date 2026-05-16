@@ -25,6 +25,8 @@ import { ApiErrorResponse } from '../../../../types/api.types';
 import {
   CreateDamageRequest,
   Damage,
+  DAMAGE_SEVERITY,
+  DAMAGE_SEVERITY_VALUES,
   DamageSeverity,
   UpdateDamageRequest
 } from '../../../../types/damage.types';
@@ -69,6 +71,8 @@ export class ClaimDetailComponent implements OnInit {
   public readonly editingDamageId = signal<string | null>(null);
   public readonly claimStatus = CLAIM_STATUS;
   public readonly claimStatusOptions = CLAIM_STATUS_VALUES;
+  public readonly damageSeverity = DAMAGE_SEVERITY;
+  public readonly damageSeverityOptions = DAMAGE_SEVERITY_VALUES;
 
   public readonly totalAmount = computed(() =>
     this.damages().reduce((sum, damage) => sum + damage.price, 0)
@@ -84,7 +88,7 @@ export class ClaimDetailComponent implements OnInit {
 
   public readonly damageForm = this.formBuilder.nonNullable.group({
     part: ['', [Validators.required, Validators.maxLength(120)]],
-    severity: ['low' as DamageSeverity, [Validators.required]],
+    severity: [DAMAGE_SEVERITY.LOW as DamageSeverity, [Validators.required]],
     imageUrl: ['', [Validators.required, Validators.pattern(imageUrlPattern)]],
     price: [0, [Validators.required, Validators.min(0)]]
   });
@@ -279,11 +283,11 @@ export class ClaimDetailComponent implements OnInit {
   }
 
   public severityBadgeClass(severity: DamageSeverity): string {
-    if (severity === 'high') {
+    if (severity === DAMAGE_SEVERITY.HIGH) {
       return 'text-bg-danger';
     }
 
-    if (severity === 'mid') {
+    if (severity === DAMAGE_SEVERITY.MID) {
       return 'text-bg-warning';
     }
 
@@ -335,7 +339,7 @@ export class ClaimDetailComponent implements OnInit {
     this.editingDamageId.set(null);
     this.damageForm.reset({
       part: '',
-      severity: 'low',
+      severity: DAMAGE_SEVERITY.LOW,
       imageUrl: '',
       price: 0
     });

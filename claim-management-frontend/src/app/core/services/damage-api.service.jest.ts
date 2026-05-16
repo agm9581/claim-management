@@ -2,10 +2,11 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { of } from 'rxjs';
 import type { HttpClient } from '@angular/common/http';
 import { DamageApiService } from './damage-api.service';
-import type {
-  CreateDamageRequest,
-  Damage,
-  UpdateDamageRequest
+import {
+  DAMAGE_SEVERITY,
+  type CreateDamageRequest,
+  type Damage,
+  type UpdateDamageRequest,
 } from '../../types/damage.types';
 
 function createHttpClientMock() {
@@ -13,7 +14,7 @@ function createHttpClientMock() {
     get: jest.fn(),
     post: jest.fn(),
     patch: jest.fn(),
-    delete: jest.fn()
+    delete: jest.fn(),
   } as unknown as jest.Mocked<Pick<HttpClient, 'get' | 'post' | 'patch' | 'delete'>>;
 }
 
@@ -28,12 +29,12 @@ describe('DamageApiService', () => {
         _id: damageId,
         claimId,
         part: 'Rear bumper',
-        severity: 'mid',
+        severity: DAMAGE_SEVERITY.MID,
         imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
         price: 850,
         createdAt: '2026-05-15T00:00:00.000Z',
-        updatedAt: '2026-05-15T00:00:00.000Z'
-      }
+        updatedAt: '2026-05-15T00:00:00.000Z',
+      },
     ];
     httpClient.get.mockReturnValue(of(expectedDamages));
 
@@ -41,7 +42,7 @@ describe('DamageApiService', () => {
 
     service.listDamagesByClaimId(claimId).subscribe((damages) => {
       expect(httpClient.get).toHaveBeenCalledWith(
-        `http://localhost:3000/api/claims/${claimId}/damages`
+        `http://localhost:3000/api/claims/${claimId}/damages`,
       );
       expect(damages).toEqual(expectedDamages);
       done();
@@ -52,16 +53,16 @@ describe('DamageApiService', () => {
     const httpClient = createHttpClientMock();
     const payload: CreateDamageRequest = {
       part: 'Rear bumper',
-      severity: 'mid',
+      severity: DAMAGE_SEVERITY.MID,
       imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
-      price: 850
+      price: 850,
     };
     const createdDamage: Damage = {
       _id: damageId,
       claimId,
       ...payload,
       createdAt: '2026-05-15T00:00:00.000Z',
-      updatedAt: '2026-05-15T00:00:00.000Z'
+      updatedAt: '2026-05-15T00:00:00.000Z',
     };
     httpClient.post.mockReturnValue(of(createdDamage));
 
@@ -70,7 +71,7 @@ describe('DamageApiService', () => {
     service.createDamage(claimId, payload).subscribe((damage) => {
       expect(httpClient.post).toHaveBeenCalledWith(
         `http://localhost:3000/api/claims/${claimId}/damages`,
-        payload
+        payload,
       );
       expect(damage).toEqual(createdDamage);
       done();
@@ -80,17 +81,17 @@ describe('DamageApiService', () => {
   it('patches an existing damage through the nested damage endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const payload: UpdateDamageRequest = {
-      price: 920
+      price: 920,
     };
     const updatedDamage: Damage = {
       _id: damageId,
       claimId,
       part: 'Rear bumper',
-      severity: 'mid',
+      severity: DAMAGE_SEVERITY.MID,
       imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
       price: 920,
       createdAt: '2026-05-15T00:00:00.000Z',
-      updatedAt: '2026-05-15T00:00:00.000Z'
+      updatedAt: '2026-05-15T00:00:00.000Z',
     };
     httpClient.patch.mockReturnValue(of(updatedDamage));
 
@@ -99,7 +100,7 @@ describe('DamageApiService', () => {
     service.updateDamage(claimId, damageId, payload).subscribe((damage) => {
       expect(httpClient.patch).toHaveBeenCalledWith(
         `http://localhost:3000/api/claims/${claimId}/damages/${damageId}`,
-        payload
+        payload,
       );
       expect(damage).toEqual(updatedDamage);
       done();
@@ -114,7 +115,7 @@ describe('DamageApiService', () => {
 
     service.deleteDamage(claimId, damageId).subscribe((response) => {
       expect(httpClient.delete).toHaveBeenCalledWith(
-        `http://localhost:3000/api/claims/${claimId}/damages/${damageId}`
+        `http://localhost:3000/api/claims/${claimId}/damages/${damageId}`,
       );
       expect(response).toBeUndefined();
       done();

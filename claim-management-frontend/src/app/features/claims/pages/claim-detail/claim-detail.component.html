@@ -214,9 +214,9 @@
                   formControlName="severity"
                   [class.is-invalid]="damageForm.controls.severity.invalid && damageForm.controls.severity.touched"
                 >
-                  <option value="low">low</option>
-                  <option value="mid">mid</option>
-                  <option value="high">high</option>
+                  @for (severity of damageSeverityOptions; track severity) {
+                    <option [value]="severity">{{ severity }}</option>
+                  }
                 </select>
                 <div class="invalid-feedback">Severity is required.</div>
               </div>

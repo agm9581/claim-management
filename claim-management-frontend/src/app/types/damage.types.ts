@@ -1,4 +1,12 @@
-export type DamageSeverity = 'low' | 'mid' | 'high';
+export const DAMAGE_SEVERITY = {
+  LOW: 'low',
+  MID: 'mid',
+  HIGH: 'high'
+} as const;
+
+export const DAMAGE_SEVERITY_VALUES = Object.values(DAMAGE_SEVERITY);
+
+export type DamageSeverity = (typeof DAMAGE_SEVERITY)[keyof typeof DAMAGE_SEVERITY];
 
 export interface Damage {
   _id: string;
