@@ -1,11 +1,11 @@
 import { NgModule, Optional, SkipSelf } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { ClaimApiService } from './services/claim-api.service';
 import { DamageApiService } from './services/damage-api.service';
 
 @NgModule({
-  imports: [HttpClientModule],
   providers: [
+    provideHttpClient(withInterceptorsFromDi()),
     {
       provide: ClaimApiService,
       useFactory: (httpClient: HttpClient) => new ClaimApiService(httpClient),
