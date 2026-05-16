@@ -294,10 +294,6 @@ export class ClaimDetailComponent implements OnInit {
       return 'text-bg-success';
     }
 
-    if (status === 'Canceled') {
-      return 'text-bg-danger';
-    }
-
     if (status === 'In Review') {
       return 'text-bg-warning';
     }

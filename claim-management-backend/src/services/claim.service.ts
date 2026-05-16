@@ -17,10 +17,6 @@ export function createClaimService(
     nextStatus: ClaimStatus,
     nextDescription: string,
   ) {
-    if (nextStatus === "Canceled" && currentStatus !== "Pending") {
-      throw new BusinessRuleError("Only pending claims can be canceled");
-    }
-
     if (nextStatus === "Finished") {
       const hasHighSeverityDamage = await damageRepository.hasHighSeverityByClaimId(claimId);
 

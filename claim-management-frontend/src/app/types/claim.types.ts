@@ -1,4 +1,4 @@
-export type ClaimStatus = 'Pending' | 'In Review' | 'Finished' | 'Canceled';
+export type ClaimStatus = 'Pending' | 'In Review' | 'Finished';
 
 export interface Claim {
   _id: string;

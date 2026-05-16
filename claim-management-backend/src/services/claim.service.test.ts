@@ -131,35 +131,6 @@ describe("createClaimService", () => {
     expect(claim).toBeNull();
   });
 
-  it("allows canceling a pending claim", async () => {
-    const claimRepository = createClaimRepositoryMock();
-    const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(buildClaim({ description: "Existing description", status: "Pending" }));
-    claimRepository.updateById.mockResolvedValue(
-      buildClaim({ description: "Existing description", status: "Canceled" }),
-    );
-
-    const service = createClaimService(claimRepository, damageRepository);
-    await service.updateClaim(claimId, { status: "Canceled" });
-
-    expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, { status: "Canceled" });
-  });
-
-  it("rejects canceling a non-pending claim", async () => {
-    const claimRepository = createClaimRepositoryMock();
-    const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(
-      buildClaim({ description: "Existing description", status: "In Review" }),
-    );
-
-    const service = createClaimService(claimRepository, damageRepository);
-
-    await expect(service.updateClaim(claimId, { status: "Canceled" })).rejects.toThrow(
-      new BusinessRuleError("Only pending claims can be canceled"),
-    );
-    expect(claimRepository.updateById).not.toHaveBeenCalled();
-  });
-
   it("rejects finishing a claim without a high severity damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();

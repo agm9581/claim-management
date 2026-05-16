@@ -310,7 +310,7 @@ components:
           example: Low speed parking impact with visible rear bumper and trunk damage.
         status:
           type: string
-          enum: [Pending, In Review, Finished, Canceled]
+          enum: [Pending, In Review, Finished]
           example: In Review
     UpdateClaimRequest:
       type: object
@@ -327,7 +327,7 @@ components:
           example: Updated claim description
         status:
           type: string
-          enum: [Pending, In Review, Finished, Canceled]
+          enum: [Pending, In Review, Finished]
           example: Finished
     Damage:
       type: object

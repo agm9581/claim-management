@@ -1,6 +1,6 @@
 import mongoose, { InferSchemaType } from "mongoose";
 
-export const ClaimStatus = ["Pending", "In Review", "Finished", "Canceled"] as const;
+export const ClaimStatus = ["Pending", "In Review", "Finished"] as const;
 export type ClaimStatus = (typeof ClaimStatus)[number];
 
 const claimSchema = new mongoose.Schema(
@@ -25,7 +25,7 @@ const claimSchema = new mongoose.Schema(
       type: String,
       enum: {
         values: ClaimStatus,
-        message: "Status must be one of: Pending, In Review, Finished, Canceled",
+        message: "Status must be one of: Pending, In Review, Finished",
       },
       default: "Pending",
       required: [true, "Status is required"],

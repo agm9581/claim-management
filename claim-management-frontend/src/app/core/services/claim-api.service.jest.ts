@@ -66,14 +66,15 @@ describe('ClaimApiService', () => {
   it('sends claim updates to the claim patch endpoint', (done: DoneCallback) => {
     const httpClient = createHttpClientMock();
     const payload: UpdateClaimRequest = {
-      status: 'Canceled',
-      description: 'Updated description that explains why the claim was canceled.'
+      status: 'Finished',
+      description:
+        'Updated description that is intentionally longer than one hundred characters so the claim can be moved into a finished state safely.'
     };
     const updatedClaim: Claim = {
       _id: claimId,
       title: 'Front-left side impact',
       description: payload.description!,
-      status: 'Canceled',
+      status: 'Finished',
       totalAmount: 2290,
       createdAt: '2026-05-15T00:00:00.000Z',
       updatedAt: '2026-05-15T00:00:00.000Z'

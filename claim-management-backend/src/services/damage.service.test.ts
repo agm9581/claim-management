@@ -264,7 +264,7 @@ describe("createDamageService", () => {
   it("rejects damage deletion when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Canceled" }));
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Finished" }));
 
     const service = createDamageService(claimRepository, damageRepository);
 
