@@ -6,13 +6,50 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 BACKEND_DIR="$REPO_ROOT/claim-management-backend"
 FRONTEND_DIR="$REPO_ROOT/claim-management-frontend"
 
-if [[ -z "${MONGODB_URI:-}" && -z "${MONGO_URI:-}" ]]; then
-  echo "MONGODB_URI or MONGO_URI must be set before running this script."
-  exit 1
-fi
-
 backend_pid=""
 frontend_pid=""
+
+require_command() {
+  local command_name="$1"
+
+  if ! command -v "$command_name" >/dev/null 2>&1; then
+    echo "Required command not found: $command_name"
+    exit 1
+  fi
+}
+
+install_dependencies_if_missing() {
+  local app_dir="$1"
+  local app_name="$2"
+
+  if [[ -d "$app_dir/node_modules" ]]; then
+    return
+  fi
+
+  echo "Dependencies missing for $app_name. Installing..."
+
+  (
+    cd "$app_dir"
+
+    if [[ -f package-lock.json ]]; then
+      npm ci
+    else
+      npm install
+    fi
+  )
+}
+
+backend_has_mongo_configuration() {
+  if [[ -n "${MONGODB_URI:-}" || -n "${MONGO_URI:-}" ]]; then
+    return 0
+  fi
+
+  if [[ -f "$BACKEND_DIR/.env" ]] && grep -Eq '^(MONGODB_URI|MONGO_URI)=' "$BACKEND_DIR/.env"; then
+    return 0
+  fi
+
+  return 1
+}
 
 cleanup() {
   if [[ -n "$backend_pid" ]] && kill -0 "$backend_pid" 2>/dev/null; then
@@ -25,6 +62,18 @@ cleanup() {
 }
 
 trap cleanup EXIT INT TERM
+
+require_command node
+require_command npm
+
+install_dependencies_if_missing "$BACKEND_DIR" "claim-management-backend"
+install_dependencies_if_missing "$FRONTEND_DIR" "claim-management-frontend"
+
+if ! backend_has_mongo_configuration; then
+  echo "MongoDB configuration is missing."
+  echo "Provide MONGODB_URI or MONGO_URI in the shell, or create $BACKEND_DIR/.env from .env.example."
+  exit 1
+fi
 
 echo "Starting backend with external MongoDB connection..."
 (
