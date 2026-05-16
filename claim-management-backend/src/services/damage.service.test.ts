@@ -1,7 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { createDamageService } from "./damage.service";
-import type { ClaimRepository } from "../repositories/claim.repository";
-import type { DamageRepository } from "../repositories/damage.repository";
+import type { ClaimRecord, ClaimRepository } from "../repositories/claim.repository";
+import type { DamageRecord, DamageRepository } from "../repositories/damage.repository";
 import type {
   CreateDamageInput,
   UpdateDamageInput,
@@ -32,6 +32,36 @@ function createDamageRepositoryMock(): jest.Mocked<DamageRepository> {
   };
 }
 
+function buildClaim(overrides: Partial<ClaimRecord> = {}): ClaimRecord {
+  return {
+    _id: "6824d4d8c6f0c3a59748df11",
+    id: "6824d4d8c6f0c3a59748df11",
+    title: "Existing claim",
+    description: "Claim description",
+    status: "Pending",
+    totalAmount: 0,
+    createdAt: new Date("2026-05-16T10:00:00.000Z"),
+    updatedAt: new Date("2026-05-16T10:00:00.000Z"),
+    ...overrides,
+  };
+}
+
+function buildDamage(overrides: Partial<DamageRecord> = {}): DamageRecord {
+  return {
+    _id: "6824d4d8c6f0c3a59748df21",
+    id: "6824d4d8c6f0c3a59748df21",
+    claimId: "6824d4d8c6f0c3a59748df11",
+    part: "Rear bumper",
+    severity: "mid",
+    imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
+    price: 850,
+    score: 6,
+    createdAt: new Date("2026-05-16T10:00:00.000Z"),
+    updatedAt: new Date("2026-05-16T10:00:00.000Z"),
+    ...overrides,
+  };
+}
+
 describe("createDamageService", () => {
   const claimId = "6824d4d8c6f0c3a59748df11";
   const damageId = "6824d4d8c6f0c3a59748df21";
@@ -50,8 +80,8 @@ describe("createDamageService", () => {
   it("gets a claim by id through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const expectedClaim = { _id: claimId };
-    claimRepository.findById.mockResolvedValue(expectedClaim as never);
+    const expectedClaim = buildClaim();
+    claimRepository.findById.mockResolvedValue(expectedClaim);
 
     const service = createDamageService(claimRepository, damageRepository);
     const claim = await service.getClaimById(claimId);
@@ -63,8 +93,8 @@ describe("createDamageService", () => {
   it("lists damages by claim id through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const expectedDamages = [{ _id: damageId }];
-    damageRepository.listByClaimId.mockResolvedValue(expectedDamages as never[]);
+    const expectedDamages = [buildDamage()];
+    damageRepository.listByClaimId.mockResolvedValue(expectedDamages);
 
     const service = createDamageService(claimRepository, damageRepository);
     const damages = await service.listDamagesByClaimId(claimId);
@@ -76,8 +106,8 @@ describe("createDamageService", () => {
   it("gets a damage by claim id and damage id through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const expectedDamage = { _id: damageId, claimId };
-    damageRepository.findByIdAndClaimId.mockResolvedValue(expectedDamage as never);
+    const expectedDamage = buildDamage();
+    damageRepository.findByIdAndClaimId.mockResolvedValue(expectedDamage);
 
     const service = createDamageService(claimRepository, damageRepository);
     const damage = await service.getDamageById(claimId, damageId);
@@ -89,11 +119,20 @@ describe("createDamageService", () => {
   it("creates a damage and syncs the claim total amount", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
-    const createdDamage = { _id: damageId, claimId, ...createDamageInput };
-    damageRepository.createForClaim.mockResolvedValue(createdDamage as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
+    const createdDamage = buildDamage({
+      _id: damageId,
+      id: damageId,
+      claimId,
+      part: createDamageInput.part,
+      severity: createDamageInput.severity,
+      imageUrl: createDamageInput.imageUrl,
+      price: createDamageInput.price,
+      score: createDamageInput.score,
+    });
+    damageRepository.createForClaim.mockResolvedValue(createdDamage);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1270);
-    claimRepository.updateTotalAmount.mockResolvedValue({ _id: claimId, totalAmount: 1270 } as never);
+    claimRepository.updateTotalAmount.mockResolvedValue(buildClaim({ totalAmount: 1270 }));
 
     const service = createDamageService(claimRepository, damageRepository);
     const damage = await service.createDamage(claimId, createDamageInput);
@@ -107,11 +146,17 @@ describe("createDamageService", () => {
   it("updates a damage and syncs the claim total amount when the damage exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
-    const updatedDamage = { _id: damageId, claimId, ...updateDamageInput };
-    damageRepository.updateByIdAndClaimId.mockResolvedValue(updatedDamage as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
+    const updatedDamage = buildDamage({
+      _id: damageId,
+      id: damageId,
+      claimId,
+      price: updateDamageInput.price ?? 850,
+      score: updateDamageInput.score ?? 6,
+    });
+    damageRepository.updateByIdAndClaimId.mockResolvedValue(updatedDamage);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1340);
-    claimRepository.updateTotalAmount.mockResolvedValue({ _id: claimId, totalAmount: 1340 } as never);
+    claimRepository.updateTotalAmount.mockResolvedValue(buildClaim({ totalAmount: 1340 }));
 
     const service = createDamageService(claimRepository, damageRepository);
     const damage = await service.updateDamage(claimId, damageId, updateDamageInput);
@@ -129,7 +174,7 @@ describe("createDamageService", () => {
   it("does not sync the claim total amount when an update misses the damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
     damageRepository.updateByIdAndClaimId.mockResolvedValue(null);
 
     const service = createDamageService(claimRepository, damageRepository);
@@ -148,11 +193,11 @@ describe("createDamageService", () => {
   it("deletes a damage and syncs the claim total amount when the damage exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
-    const deletedDamage = { _id: damageId, claimId };
-    damageRepository.deleteByIdAndClaimId.mockResolvedValue(deletedDamage as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
+    const deletedDamage = buildDamage({ _id: damageId, id: damageId, claimId });
+    damageRepository.deleteByIdAndClaimId.mockResolvedValue(deletedDamage);
     damageRepository.sumPricesByClaimId.mockResolvedValue(420);
-    claimRepository.updateTotalAmount.mockResolvedValue({ _id: claimId, totalAmount: 420 } as never);
+    claimRepository.updateTotalAmount.mockResolvedValue(buildClaim({ totalAmount: 420 }));
 
     const service = createDamageService(claimRepository, damageRepository);
     const damage = await service.deleteDamage(claimId, damageId);
@@ -166,7 +211,7 @@ describe("createDamageService", () => {
   it("does not sync the claim total amount when a delete misses the damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Pending" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
     damageRepository.deleteByIdAndClaimId.mockResolvedValue(null);
 
     const service = createDamageService(claimRepository, damageRepository);
@@ -193,7 +238,7 @@ describe("createDamageService", () => {
   it("rejects damage creation when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Finished" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Finished" }));
 
     const service = createDamageService(claimRepository, damageRepository);
 
@@ -206,7 +251,7 @@ describe("createDamageService", () => {
   it("rejects damage updates when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "In Review" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: "In Review" }));
 
     const service = createDamageService(claimRepository, damageRepository);
 
@@ -219,7 +264,7 @@ describe("createDamageService", () => {
   it("rejects damage deletion when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({ _id: claimId, status: "Canceled" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Canceled" }));
 
     const service = createDamageService(claimRepository, damageRepository);
 

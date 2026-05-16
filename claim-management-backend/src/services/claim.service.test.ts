@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { createClaimService } from "./claim.service";
-import type { ClaimRepository } from "../repositories/claim.repository";
+import type { ClaimRecord, ClaimRepository } from "../repositories/claim.repository";
 import type { DamageRepository } from "../repositories/damage.repository";
 import type {
   CreateClaimInput,
@@ -32,6 +32,21 @@ function createDamageRepositoryMock(): jest.Mocked<DamageRepository> {
   };
 }
 
+function buildClaim(overrides: Partial<ClaimRecord> = {}): ClaimRecord {
+  return {
+    _id: "6824d4d8c6f0c3a59748df11",
+    id: "6824d4d8c6f0c3a59748df11",
+    title: "Existing claim",
+    description:
+      "This description is intentionally longer than one hundred characters to allow the claim to move into a finished state safely.",
+    status: "In Review",
+    totalAmount: 0,
+    createdAt: new Date("2026-05-16T10:00:00.000Z"),
+    updatedAt: new Date("2026-05-16T10:00:00.000Z"),
+    ...overrides,
+  };
+}
+
 describe("createClaimService", () => {
   const claimId = "6824d4d8c6f0c3a59748df11";
   const createClaimInput: CreateClaimInput = {
@@ -46,8 +61,8 @@ describe("createClaimService", () => {
   it("lists claims through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const expectedClaims = [{ _id: claimId }];
-    claimRepository.list.mockResolvedValue(expectedClaims as never[]);
+    const expectedClaims = [buildClaim()];
+    claimRepository.list.mockResolvedValue(expectedClaims);
 
     const service = createClaimService(claimRepository, damageRepository);
     const claims = await service.listClaims();
@@ -59,8 +74,8 @@ describe("createClaimService", () => {
   it("gets a claim by id through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const expectedClaim = { _id: claimId };
-    claimRepository.findById.mockResolvedValue(expectedClaim as never);
+    const expectedClaim = buildClaim();
+    claimRepository.findById.mockResolvedValue(expectedClaim);
 
     const service = createClaimService(claimRepository, damageRepository);
     const claim = await service.getClaimById(claimId);
@@ -72,8 +87,14 @@ describe("createClaimService", () => {
   it("creates a claim through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const createdClaim = { _id: claimId, ...createClaimInput };
-    claimRepository.create.mockResolvedValue(createdClaim as never);
+    const createdClaim = buildClaim({
+      _id: claimId,
+      id: claimId,
+      title: createClaimInput.title,
+      description: createClaimInput.description,
+      status: createClaimInput.status ?? "Pending",
+    });
+    claimRepository.create.mockResolvedValue(createdClaim);
 
     const service = createClaimService(claimRepository, damageRepository);
     const claim = await service.createClaim(createClaimInput);
@@ -85,16 +106,10 @@ describe("createClaimService", () => {
   it("updates a claim through the repository", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({
-      _id: claimId,
-      title: "Existing claim",
-      description:
-        "This description is intentionally longer than one hundred characters to allow the claim to move into a finished state safely.",
-      status: "In Review",
-    } as never);
-    damageRepository.hasHighSeverityByClaimId.mockResolvedValue({ _id: "damage" } as never);
-    const updatedClaim = { _id: claimId, ...updateClaimInput };
-    claimRepository.updateById.mockResolvedValue(updatedClaim as never);
+    claimRepository.findById.mockResolvedValue(buildClaim());
+    damageRepository.hasHighSeverityByClaimId.mockResolvedValue(true);
+    const updatedClaim = buildClaim({ status: "Finished" });
+    claimRepository.updateById.mockResolvedValue(updatedClaim);
 
     const service = createClaimService(claimRepository, damageRepository);
     const claim = await service.updateClaim(claimId, updateClaimInput);
@@ -119,16 +134,10 @@ describe("createClaimService", () => {
   it("allows canceling a pending claim", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({
-      _id: claimId,
-      title: "Existing claim",
-      description: "Existing description",
-      status: "Pending",
-    } as never);
-    claimRepository.updateById.mockResolvedValue({
-      _id: claimId,
-      status: "Canceled",
-    } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim({ description: "Existing description", status: "Pending" }));
+    claimRepository.updateById.mockResolvedValue(
+      buildClaim({ description: "Existing description", status: "Canceled" }),
+    );
 
     const service = createClaimService(claimRepository, damageRepository);
     await service.updateClaim(claimId, { status: "Canceled" });
@@ -139,12 +148,9 @@ describe("createClaimService", () => {
   it("rejects canceling a non-pending claim", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({
-      _id: claimId,
-      title: "Existing claim",
-      description: "Existing description",
-      status: "In Review",
-    } as never);
+    claimRepository.findById.mockResolvedValue(
+      buildClaim({ description: "Existing description", status: "In Review" }),
+    );
 
     const service = createClaimService(claimRepository, damageRepository);
 
@@ -157,14 +163,8 @@ describe("createClaimService", () => {
   it("rejects finishing a claim without a high severity damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({
-      _id: claimId,
-      title: "Existing claim",
-      description:
-        "This description is intentionally longer than one hundred characters to allow the claim to move into a finished state safely.",
-      status: "In Review",
-    } as never);
-    damageRepository.hasHighSeverityByClaimId.mockResolvedValue(null);
+    claimRepository.findById.mockResolvedValue(buildClaim());
+    damageRepository.hasHighSeverityByClaimId.mockResolvedValue(false);
 
     const service = createClaimService(claimRepository, damageRepository);
 
@@ -179,13 +179,8 @@ describe("createClaimService", () => {
   it("rejects finishing a claim with a short description", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue({
-      _id: claimId,
-      title: "Existing claim",
-      description: "Too short",
-      status: "In Review",
-    } as never);
-    damageRepository.hasHighSeverityByClaimId.mockResolvedValue({ _id: "damage" } as never);
+    claimRepository.findById.mockResolvedValue(buildClaim({ description: "Too short" }));
+    damageRepository.hasHighSeverityByClaimId.mockResolvedValue(true);
 
     const service = createClaimService(claimRepository, damageRepository);
 
@@ -200,9 +195,9 @@ describe("createClaimService", () => {
   it("deletes a claim and cascades damages when the claim exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    const deletedClaim = { _id: claimId };
-    claimRepository.deleteById.mockResolvedValue(deletedClaim as never);
-    damageRepository.deleteByClaimId.mockResolvedValue({ acknowledged: true, deletedCount: 2 } as never);
+    const deletedClaim = buildClaim();
+    claimRepository.deleteById.mockResolvedValue(deletedClaim);
+    damageRepository.deleteByClaimId.mockResolvedValue({ acknowledged: true, deletedCount: 2 });
 
     const service = createClaimService(claimRepository, damageRepository);
     const claim = await service.deleteClaim(claimId);
