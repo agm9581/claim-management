@@ -55,6 +55,7 @@ Human supervision applied:
 - fixed TypeScript/Jest typing issues
 - reran the suite until it passed cleanly
 - verified coverage output instead of trusting generated tests blindly
+- added a dedicated backend integration-test path for persisted `totalAmount` synchronization checks
 
 Current backend test result at the time of writing:
 
@@ -90,9 +91,7 @@ Human supervision applied:
 
 ## Frontend Reactive Logic Supervision
 
-The frontend reactive claim-detail flow required by the case is not implemented yet.
-
-When implemented, AI-generated frontend code must be supervised against these checks:
+The frontend reactive claim-detail flow required by the case is implemented and was supervised against these checks:
 
 - damage add/edit/delete must update the displayed total immediately without reload
 - reactive forms must enforce required damage fields before submit
@@ -110,6 +109,7 @@ When implemented, AI-generated frontend code must be supervised against these ch
 - `claim-management-backend`: `npx tsc --noEmit`
 - `claim-management-backend`: `npm test -- --runTestsByPath src/services/claim.service.test.ts src/services/damage.service.test.ts`
 - `claim-management-backend`: `npm test -- --runTestsByPath src/services/damage.service.test.ts`
+- `claim-management-backend`: `npm run test:integration`
 - `claim-management-frontend`: `npx tsc --noEmit`
 - `claim-management-frontend`: `npm run test:services -- --runTestsByPath src/app/core/services/damage-api.service.jest.ts`
 - `claim-management-frontend`: `npm test`
@@ -146,6 +146,7 @@ Recent user-directed cleanup prompts included:
 - replacement of backend status/severity magic strings with named constants
 - removal of dead `validateStatusTransition` parameter
 - creation of root helper scripts to boot both applications together
+- addition of a dedicated backend integration-test command and combined `test:all` command
 
 Recent related commits:
 
@@ -166,6 +167,7 @@ Latest uncommitted cleanup at the time of this log update:
 - backend service logic, validators, repository checks, seeds, and tests updated to use the new constants
 - dead `currentStatus` argument removed from `validateStatusTransition`
 - root shell scripts added for combined monorepo startup in seeded and external-Mongo modes
+- backend integration test added for `totalAmount` persistence and recalculation behavior
 
 ## Hidden Specification / Suspicious Input Note
 
@@ -206,4 +208,5 @@ The current frontend review established these conventions as the preferred patte
 - prefer Angular-native lifecycle and DI helpers such as `inject()` and `takeUntilDestroyed()` over third-party decorator helpers
 - prefer Angular provider APIs such as `provideHttpClient(...)` over deprecated module-based setup
 - keep frontend Jest tests as the primary executable test entrypoint through `npm run test`
+- keep backend unit tests and integration tests as separate commands, with a combined `test:all` command for full validation
 - provide root-level convenience scripts when a monorepo contains multiple independently bootable applications
