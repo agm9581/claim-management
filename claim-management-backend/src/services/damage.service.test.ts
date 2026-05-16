@@ -55,7 +55,6 @@ function buildDamage(overrides: Partial<DamageRecord> = {}): DamageRecord {
     severity: "mid",
     imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
     price: 850,
-    score: 6,
     createdAt: new Date("2026-05-16T10:00:00.000Z"),
     updatedAt: new Date("2026-05-16T10:00:00.000Z"),
     ...overrides,
@@ -70,11 +69,9 @@ describe("createDamageService", () => {
     severity: "mid",
     imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
     price: 850,
-    score: 6,
   };
   const updateDamageInput: UpdateDamageInput = {
     price: 920,
-    score: 7,
   };
 
   it("gets a claim by id through the repository", async () => {
@@ -128,7 +125,6 @@ describe("createDamageService", () => {
       severity: createDamageInput.severity,
       imageUrl: createDamageInput.imageUrl,
       price: createDamageInput.price,
-      score: createDamageInput.score,
     });
     damageRepository.createForClaim.mockResolvedValue(createdDamage);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1270);
@@ -152,7 +148,6 @@ describe("createDamageService", () => {
       id: damageId,
       claimId,
       price: updateDamageInput.price ?? 850,
-      score: updateDamageInput.score ?? 6,
     });
     damageRepository.updateByIdAndClaimId.mockResolvedValue(updatedDamage);
     damageRepository.sumPricesByClaimId.mockResolvedValue(1340);

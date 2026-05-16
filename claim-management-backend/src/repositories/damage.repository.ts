@@ -14,7 +14,6 @@ export type DamageRecord = {
   severity: DamageSeverity;
   imageUrl: string;
   price: number;
-  score: number;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -52,7 +51,6 @@ function toDamageRecord(damage: HydratedDocument<Damage> | null): DamageRecord |
     severity: damage.severity,
     imageUrl: damage.imageUrl,
     price: damage.price,
-    score: damage.score,
     createdAt: damage.createdAt,
     updatedAt: damage.updatedAt,
   };

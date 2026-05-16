@@ -16,12 +16,6 @@ export const createDamageSchema = z
     imageUrl: z.string().trim().url("Image URL must be valid"),
 
     price: z.number().min(0, "Price cannot be negative"),
-
-    score: z
-      .number()
-      .int("Score must be an integer")
-      .min(1, "Score must be at least 1")
-      .max(10, "Score cannot exceed 10"),
   })
   .strict();
 

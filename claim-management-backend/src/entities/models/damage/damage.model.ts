@@ -40,13 +40,6 @@ const damageSchema = new mongoose.Schema(
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
     },
-
-    score: {
-      type: Number,
-      required: [true, "Score is required"],
-      min: [1, "Score must be at least 1"],
-      max: [10, "Score cannot exceed 10"],
-    },
   },
   {
     timestamps: true,

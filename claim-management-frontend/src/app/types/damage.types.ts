@@ -7,7 +7,6 @@ export interface Damage {
   severity: DamageSeverity;
   imageUrl: string;
   price: number;
-  score: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -17,7 +16,6 @@ export interface CreateDamageRequest {
   severity: DamageSeverity;
   imageUrl: string;
   price: number;
-  score: number;
 }
 
 export type UpdateDamageRequest = Partial<CreateDamageRequest>;

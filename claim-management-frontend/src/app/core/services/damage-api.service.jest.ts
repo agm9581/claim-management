@@ -32,7 +32,6 @@ describe('DamageApiService', () => {
         severity: 'mid',
         imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
         price: 850,
-        score: 6,
         createdAt: '2026-05-15T00:00:00.000Z',
         updatedAt: '2026-05-15T00:00:00.000Z'
       }
@@ -56,8 +55,7 @@ describe('DamageApiService', () => {
       part: 'Rear bumper',
       severity: 'mid',
       imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
-      price: 850,
-      score: 6
+      price: 850
     };
     const createdDamage: Damage = {
       _id: damageId,
@@ -83,8 +81,7 @@ describe('DamageApiService', () => {
   it('patches an existing damage through the nested damage endpoint', (done: DoneCallback) => {
     const httpClient = createHttpClientMock();
     const payload: UpdateDamageRequest = {
-      price: 920,
-      score: 7
+      price: 920
     };
     const updatedDamage: Damage = {
       _id: damageId,
@@ -93,7 +90,6 @@ describe('DamageApiService', () => {
       severity: 'mid',
       imageUrl: 'https://images.example.com/claims/rear-bumper.jpg',
       price: 920,
-      score: 7,
       createdAt: '2026-05-15T00:00:00.000Z',
       updatedAt: '2026-05-15T00:00:00.000Z'
     };

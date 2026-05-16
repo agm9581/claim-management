@@ -40,7 +40,6 @@ type DamageFormValue = {
   severity: DamageSeverity;
   imageUrl: string;
   price: number;
-  score: number;
 };
 
 @Component({
@@ -83,8 +82,7 @@ export class ClaimDetailComponent implements OnInit {
     part: ['', [Validators.required, Validators.maxLength(120)]],
     severity: ['low' as DamageSeverity, [Validators.required]],
     imageUrl: ['', [Validators.required, Validators.pattern(imageUrlPattern)]],
-    price: [0, [Validators.required, Validators.min(0)]],
-    score: [1, [Validators.required, Validators.min(1), Validators.max(10)]]
+    price: [0, [Validators.required, Validators.min(0)]]
   });
 
   ngOnInit(): void {
@@ -172,8 +170,7 @@ export class ClaimDetailComponent implements OnInit {
       part: damage.part,
       severity: damage.severity,
       imageUrl: damage.imageUrl,
-      price: damage.price,
-      score: damage.score
+      price: damage.price
     });
   }
 
@@ -336,8 +333,7 @@ export class ClaimDetailComponent implements OnInit {
       part: '',
       severity: 'low',
       imageUrl: '',
-      price: 0,
-      score: 1
+      price: 0
     });
   }
 
@@ -358,8 +354,7 @@ export class ClaimDetailComponent implements OnInit {
       part: rawValue.part.trim(),
       severity: rawValue.severity,
       imageUrl: rawValue.imageUrl.trim(),
-      price: Number(rawValue.price),
-      score: Number(rawValue.score)
+      price: Number(rawValue.price)
     };
   }
 

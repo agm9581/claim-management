@@ -10,7 +10,6 @@ type SeedClaim = {
     severity: "low" | "mid" | "high";
     imageUrl: string;
     price: number;
-    score: number;
   }>;
 };
 
@@ -25,14 +24,12 @@ const seedClaims: SeedClaim[] = [
         severity: "mid",
         imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
         price: 850,
-        score: 6,
       },
       {
         part: "Trunk lid",
         severity: "low",
         imageUrl: "https://images.example.com/claims/trunk-lid.jpg",
         price: 420,
-        score: 4,
       },
     ],
   },
@@ -46,21 +43,18 @@ const seedClaims: SeedClaim[] = [
         severity: "high",
         imageUrl: "https://images.example.com/claims/front-left-fender.jpg",
         price: 1400,
-        score: 8,
       },
       {
         part: "Left headlight",
         severity: "mid",
         imageUrl: "https://images.example.com/claims/left-headlight.jpg",
         price: 680,
-        score: 5,
       },
       {
         part: "Wheel arch trim",
         severity: "low",
         imageUrl: "https://images.example.com/claims/wheel-arch-trim.jpg",
         price: 210,
-        score: 3,
       },
     ],
   },
