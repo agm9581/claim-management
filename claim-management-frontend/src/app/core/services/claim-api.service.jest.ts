@@ -1,9 +1,12 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import type { DoneCallback } from '@jest/types';
 import { of } from 'rxjs';
 import type { HttpClient } from '@angular/common/http';
 import { ClaimApiService } from './claim-api.service';
-import type { Claim, UpdateClaimRequest } from '../../types/claim.types';
+import {
+  CLAIM_STATUS,
+  type Claim,
+  type UpdateClaimRequest
+} from '../../types/claim.types';
 
 function createHttpClientMock() {
   return {
@@ -15,14 +18,14 @@ function createHttpClientMock() {
 describe('ClaimApiService', () => {
   const claimId = '6824d4d8c6f0c3a59748df11';
 
-  it('requests the claim list from the claims endpoint', (done: DoneCallback) => {
+  it('requests the claim list from the claims endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const expectedClaims: Claim[] = [
       {
         _id: claimId,
         title: 'Rear bumper collision',
         description: 'Low speed parking impact with visible rear bumper damage.',
-        status: 'Pending',
+        status: CLAIM_STATUS.PENDING,
         totalAmount: 0,
         createdAt: '2026-05-15T00:00:00.000Z',
         updatedAt: '2026-05-15T00:00:00.000Z'
@@ -39,13 +42,13 @@ describe('ClaimApiService', () => {
     });
   });
 
-  it('requests a claim by id from the claim detail endpoint', (done: DoneCallback) => {
+  it('requests a claim by id from the claim detail endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const expectedClaim: Claim = {
       _id: claimId,
       title: 'Front-left side impact',
       description: 'Detailed claim description',
-      status: 'In Review',
+      status: CLAIM_STATUS.IN_REVIEW,
       totalAmount: 2290,
       createdAt: '2026-05-15T00:00:00.000Z',
       updatedAt: '2026-05-15T00:00:00.000Z'
@@ -63,10 +66,10 @@ describe('ClaimApiService', () => {
     });
   });
 
-  it('sends claim updates to the claim patch endpoint', (done: DoneCallback) => {
+  it('sends claim updates to the claim patch endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const payload: UpdateClaimRequest = {
-      status: 'Finished',
+      status: CLAIM_STATUS.FINISHED,
       description:
         'Updated description that is intentionally longer than one hundred characters so the claim can be moved into a finished state safely.'
     };
@@ -74,7 +77,7 @@ describe('ClaimApiService', () => {
       _id: claimId,
       title: 'Front-left side impact',
       description: payload.description!,
-      status: 'Finished',
+      status: CLAIM_STATUS.FINISHED,
       totalAmount: 2290,
       createdAt: '2026-05-15T00:00:00.000Z',
       updatedAt: '2026-05-15T00:00:00.000Z'

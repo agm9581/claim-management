@@ -1,5 +1,4 @@
 import { describe, expect, it, jest } from '@jest/globals';
-import type { DoneCallback } from '@jest/types';
 import { of } from 'rxjs';
 import type { HttpClient } from '@angular/common/http';
 import { DamageApiService } from './damage-api.service';
@@ -22,7 +21,7 @@ describe('DamageApiService', () => {
   const claimId = '6824d4d8c6f0c3a59748df11';
   const damageId = '6824d4d8c6f0c3a59748df21';
 
-  it('requests damages for a claim from the nested damages endpoint', (done: DoneCallback) => {
+  it('requests damages for a claim from the nested damages endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const expectedDamages: Damage[] = [
       {
@@ -49,7 +48,7 @@ describe('DamageApiService', () => {
     });
   });
 
-  it('posts a new damage to the nested damages endpoint', (done: DoneCallback) => {
+  it('posts a new damage to the nested damages endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const payload: CreateDamageRequest = {
       part: 'Rear bumper',
@@ -78,7 +77,7 @@ describe('DamageApiService', () => {
     });
   });
 
-  it('patches an existing damage through the nested damage endpoint', (done: DoneCallback) => {
+  it('patches an existing damage through the nested damage endpoint', (done) => {
     const httpClient = createHttpClientMock();
     const payload: UpdateDamageRequest = {
       price: 920
@@ -107,7 +106,7 @@ describe('DamageApiService', () => {
     });
   });
 
-  it('deletes a damage through the nested damage endpoint', (done: DoneCallback) => {
+  it('deletes a damage through the nested damage endpoint', (done) => {
     const httpClient = createHttpClientMock();
     httpClient.delete.mockReturnValue(of(void 0));
 

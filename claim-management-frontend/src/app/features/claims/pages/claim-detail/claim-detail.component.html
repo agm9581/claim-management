@@ -72,9 +72,9 @@
                   formControlName="status"
                   [class.is-invalid]="claimForm.controls.status.invalid && claimForm.controls.status.touched"
                 >
-                  <option value="Pending">Pending</option>
-                  <option value="In Review">In Review</option>
-                  <option value="Finished">Finished</option>
+                  @for (status of claimStatusOptions; track status) {
+                    <option [value]="status">{{ status }}</option>
+                  }
                 </select>
                 <div class="invalid-feedback">Status is required.</div>
               </div>

@@ -15,6 +15,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ClaimApiService } from '../../../../core/services/claim-api.service';
 import { DamageApiService } from '../../../../core/services/damage-api.service';
 import {
+  CLAIM_STATUS,
+  CLAIM_STATUS_VALUES,
   Claim,
   ClaimStatus,
   UpdateClaimRequest
@@ -65,17 +67,19 @@ export class ClaimDetailComponent implements OnInit {
   public readonly claimErrorMessage = signal<string | null>(null);
   public readonly damageErrorMessage = signal<string | null>(null);
   public readonly editingDamageId = signal<string | null>(null);
+  public readonly claimStatus = CLAIM_STATUS;
+  public readonly claimStatusOptions = CLAIM_STATUS_VALUES;
 
   public readonly totalAmount = computed(() =>
     this.damages().reduce((sum, damage) => sum + damage.price, 0)
   );
 
-  public readonly canManageDamages = computed(() => this.claim()?.status === 'Pending');
+  public readonly canManageDamages = computed(() => this.claim()?.status === CLAIM_STATUS.PENDING);
 
   public readonly claimForm = this.formBuilder.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(120)]],
     description: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(2000)]],
-    status: ['Pending' as ClaimStatus, [Validators.required]]
+    status: [CLAIM_STATUS.PENDING as ClaimStatus, [Validators.required]]
   });
 
   public readonly damageForm = this.formBuilder.nonNullable.group({
@@ -287,11 +291,11 @@ export class ClaimDetailComponent implements OnInit {
   }
 
   public statusBadgeClass(status: Claim['status']): string {
-    if (status === 'Finished') {
+    if (status === CLAIM_STATUS.FINISHED) {
       return 'text-bg-success';
     }
 
-    if (status === 'In Review') {
+    if (status === CLAIM_STATUS.IN_REVIEW) {
       return 'text-bg-warning';
     }
 

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 import { ClaimApiService } from '../../../../core/services/claim-api.service';
-import { Claim } from '../../../../types/claim.types';
+import { CLAIM_STATUS, Claim } from '../../../../types/claim.types';
 
 @Component({
   selector: 'app-claim-list',
@@ -26,11 +26,11 @@ export class ClaimListComponent implements OnInit {
   }
 
   public statusBadgeClass(status: Claim['status']): string {
-    if (status === 'Finished') {
+    if (status === CLAIM_STATUS.FINISHED) {
       return 'text-bg-success';
     }
 
-    if (status === 'In Review') {
+    if (status === CLAIM_STATUS.IN_REVIEW) {
       return 'text-bg-warning';
     }
 
