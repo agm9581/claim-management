@@ -19,13 +19,7 @@ export function createClaimService(
     if (nextStatus === CLAIM_STATUS.FINISHED) {
       const hasHighSeverityDamage = await damageRepository.hasHighSeverityByClaimId(claimId);
 
-      if (!hasHighSeverityDamage) {
-        throw new BusinessRuleError(
-          "A claim needs at least one high severity damage before it can be finished",
-        );
-      }
-
-      if (nextDescription.trim().length <= 100) {
+      if (hasHighSeverityDamage && nextDescription.trim().length <= 100) {
         throw new BusinessRuleError(
           "A finished claim with high severity damage requires a description longer than 100 characters",
         );

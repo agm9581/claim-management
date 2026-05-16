@@ -132,20 +132,21 @@ describe("createClaimService", () => {
     expect(claim).toBeNull();
   });
 
-  it("rejects finishing a claim without a high severity damage", async () => {
+  it("allows finishing a claim without a high severity damage", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
     claimRepository.findById.mockResolvedValue(buildClaim());
     damageRepository.hasHighSeverityByClaimId.mockResolvedValue(false);
+    const updatedClaim = buildClaim({ status: CLAIM_STATUS.FINISHED });
+    claimRepository.updateById.mockResolvedValue(updatedClaim);
 
     const service = createClaimService(claimRepository, damageRepository);
+    const claim = await service.updateClaim(claimId, { status: CLAIM_STATUS.FINISHED });
 
-    await expect(service.updateClaim(claimId, { status: CLAIM_STATUS.FINISHED })).rejects.toThrow(
-      new BusinessRuleError(
-        "A claim needs at least one high severity damage before it can be finished",
-      ),
-    );
-    expect(claimRepository.updateById).not.toHaveBeenCalled();
+    expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, {
+      status: CLAIM_STATUS.FINISHED,
+    });
+    expect(claim).toBe(updatedClaim);
   });
 
   it("rejects finishing a claim with a short description", async () => {
