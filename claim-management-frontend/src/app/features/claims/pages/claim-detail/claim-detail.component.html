@@ -32,12 +32,17 @@
               <div>
                 <h2 class="h4 mb-1">Claim workflow</h2>
                 <p class="text-secondary mb-0">
-                  Update the claim description and status. Backend rules control which transitions are accepted.
+                  Update the claim description and status. Backend rules control which transitions
+                  are accepted.
                 </p>
               </div>
             </div>
 
-            <form [formGroup]="claimForm" (ngSubmit)="submitClaim()" class="d-flex flex-column gap-3">
+            <form
+              [formGroup]="claimForm"
+              (ngSubmit)="submitClaim()"
+              class="d-flex flex-column gap-3"
+            >
               <div>
                 <label class="form-label" for="claimTitle">Title</label>
                 <input
@@ -45,9 +50,13 @@
                   type="text"
                   class="form-control"
                   formControlName="title"
-                  [class.is-invalid]="claimForm.controls.title.invalid && claimForm.controls.title.touched"
+                  [class.is-invalid]="
+                    claimForm.controls.title.invalid && claimForm.controls.title.touched
+                  "
                 />
-                <div class="invalid-feedback">Title is required and cannot exceed 120 characters.</div>
+                <div class="invalid-feedback">
+                  Title is required and cannot exceed 120 characters.
+                </div>
               </div>
 
               <div>
@@ -57,10 +66,13 @@
                   rows="4"
                   class="form-control"
                   formControlName="description"
-                  [class.is-invalid]="claimForm.controls.description.invalid && claimForm.controls.description.touched"
+                  [class.is-invalid]="
+                    claimForm.controls.description.invalid && claimForm.controls.description.touched
+                  "
                 ></textarea>
                 <div class="invalid-feedback">
-                  Description is required. Finished claims with high-severity damage need more than 100 characters.
+                  Description is required. Finished claims with high-severity damage need more than
+                  100 characters.
                 </div>
               </div>
 
@@ -70,7 +82,9 @@
                   id="claimStatus"
                   class="form-select"
                   formControlName="status"
-                  [class.is-invalid]="claimForm.controls.status.invalid && claimForm.controls.status.touched"
+                  [class.is-invalid]="
+                    claimForm.controls.status.invalid && claimForm.controls.status.touched
+                  "
                 >
                   @for (status of claimStatusOptions; track status) {
                     <option [value]="status">{{ status }}</option>
@@ -96,7 +110,7 @@
           </div>
         </div>
 
-        <div class="card h-100">
+        <div class="card">
           <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
               <div>
@@ -129,13 +143,21 @@
                       <tr>
                         <td class="fw-semibold">{{ damage.part }}</td>
                         <td>
-                          <span class="badge rounded-pill" [class]="severityBadgeClass(damage.severity)">
+                          <span
+                            class="badge rounded-pill"
+                            [class]="severityBadgeClass(damage.severity)"
+                          >
                             {{ damage.severity }}
                           </span>
                         </td>
                         <td>{{ formatCurrency(damage.price) }}</td>
                         <td>
-                          <a [href]="damage.imageUrl" class="link-primary" target="_blank" rel="noopener">
+                          <a
+                            [href]="damage.imageUrl"
+                            class="link-primary"
+                            target="_blank"
+                            rel="noopener"
+                          >
                             Open image
                           </a>
                         </td>
@@ -170,7 +192,7 @@
       </div>
 
       <div class="col-12 col-xl-4">
-        <div class="card h-100">
+        <div class="card">
           <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
               <div>
@@ -182,7 +204,8 @@
                   }
                 </h2>
                 <p class="text-secondary mb-0">
-                  All fields are required. Damage editing is enabled only while the claim is pending.
+                  All fields are required. Damage editing is enabled only while the claim is
+                  pending.
                 </p>
               </div>
             </div>
@@ -193,7 +216,11 @@
               </div>
             }
 
-            <form [formGroup]="damageForm" (ngSubmit)="submitDamage()" class="d-flex flex-column gap-3">
+            <form
+              [formGroup]="damageForm"
+              (ngSubmit)="submitDamage()"
+              class="d-flex flex-column gap-3"
+            >
               <div>
                 <label class="form-label" for="part">Part</label>
                 <input
@@ -201,9 +228,13 @@
                   type="text"
                   class="form-control"
                   formControlName="part"
-                  [class.is-invalid]="damageForm.controls.part.invalid && damageForm.controls.part.touched"
+                  [class.is-invalid]="
+                    damageForm.controls.part.invalid && damageForm.controls.part.touched
+                  "
                 />
-                <div class="invalid-feedback">Part is required and cannot exceed 120 characters.</div>
+                <div class="invalid-feedback">
+                  Part is required and cannot exceed 120 characters.
+                </div>
               </div>
 
               <div>
@@ -212,7 +243,9 @@
                   id="severity"
                   class="form-select"
                   formControlName="severity"
-                  [class.is-invalid]="damageForm.controls.severity.invalid && damageForm.controls.severity.touched"
+                  [class.is-invalid]="
+                    damageForm.controls.severity.invalid && damageForm.controls.severity.touched
+                  "
                 >
                   @for (severity of damageSeverityOptions; track severity) {
                     <option [value]="severity">{{ severity }}</option>
@@ -228,23 +261,27 @@
                   type="url"
                   class="form-control"
                   formControlName="imageUrl"
-                  [class.is-invalid]="damageForm.controls.imageUrl.invalid && damageForm.controls.imageUrl.touched"
+                  [class.is-invalid]="
+                    damageForm.controls.imageUrl.invalid && damageForm.controls.imageUrl.touched
+                  "
                 />
                 <div class="invalid-feedback">A valid image URL is required.</div>
               </div>
 
               <div>
-                  <label class="form-label" for="price">Price</label>
-                  <input
-                    id="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    class="form-control"
-                    formControlName="price"
-                    [class.is-invalid]="damageForm.controls.price.invalid && damageForm.controls.price.touched"
-                  />
-                  <div class="invalid-feedback">Price is required and must be 0 or greater.</div>
+                <label class="form-label" for="price">Price</label>
+                <input
+                  id="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  class="form-control"
+                  formControlName="price"
+                  [class.is-invalid]="
+                    damageForm.controls.price.invalid && damageForm.controls.price.touched
+                  "
+                />
+                <div class="invalid-feedback">Price is required and must be 0 or greater.</div>
               </div>
 
               @if (damageErrorMessage()) {
@@ -252,7 +289,11 @@
               }
 
               <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1" [disabled]="damageSaving() || !canManageDamages()">
+                <button
+                  type="submit"
+                  class="btn btn-primary flex-grow-1"
+                  [disabled]="damageSaving() || !canManageDamages()"
+                >
                   @if (damageSaving()) {
                     Saving...
                   } @else if (isEditMode) {
@@ -263,7 +304,12 @@
                 </button>
 
                 @if (isEditMode) {
-                  <button type="button" class="btn btn-outline-secondary" (click)="cancelEdit()" [disabled]="damageSaving()">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    (click)="cancelEdit()"
+                    [disabled]="damageSaving()"
+                  >
                     Cancel
                   </button>
                 }
