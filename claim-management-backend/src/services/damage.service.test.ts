@@ -1,5 +1,7 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { createDamageService } from "./damage.service";
+import { CLAIM_STATUS } from "../entities/models/claim/claim.model";
+import { DAMAGE_SEVERITY } from "../entities/models/damage/damage.model";
 import type { ClaimRecord, ClaimRepository } from "../repositories/claim.repository";
 import type { DamageRecord, DamageRepository } from "../repositories/damage.repository";
 import type {
@@ -38,7 +40,7 @@ function buildClaim(overrides: Partial<ClaimRecord> = {}): ClaimRecord {
     id: "6824d4d8c6f0c3a59748df11",
     title: "Existing claim",
     description: "Claim description",
-    status: "Pending",
+    status: CLAIM_STATUS.PENDING,
     totalAmount: 0,
     createdAt: new Date("2026-05-16T10:00:00.000Z"),
     updatedAt: new Date("2026-05-16T10:00:00.000Z"),
@@ -52,7 +54,7 @@ function buildDamage(overrides: Partial<DamageRecord> = {}): DamageRecord {
     id: "6824d4d8c6f0c3a59748df21",
     claimId: "6824d4d8c6f0c3a59748df11",
     part: "Rear bumper",
-    severity: "mid",
+    severity: DAMAGE_SEVERITY.MID,
     imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
     price: 850,
     createdAt: new Date("2026-05-16T10:00:00.000Z"),
@@ -66,7 +68,7 @@ describe("createDamageService", () => {
   const damageId = "6824d4d8c6f0c3a59748df21";
   const createDamageInput: CreateDamageInput = {
     part: "Rear bumper",
-    severity: "mid",
+    severity: DAMAGE_SEVERITY.MID,
     imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
     price: 850,
   };
@@ -233,7 +235,7 @@ describe("createDamageService", () => {
   it("rejects damage creation when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Finished" }));
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: CLAIM_STATUS.FINISHED }));
 
     const service = createDamageService(claimRepository, damageRepository);
 
@@ -246,7 +248,7 @@ describe("createDamageService", () => {
   it("rejects damage updates when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(buildClaim({ status: "In Review" }));
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: CLAIM_STATUS.IN_REVIEW }));
 
     const service = createDamageService(claimRepository, damageRepository);
 
@@ -259,7 +261,7 @@ describe("createDamageService", () => {
   it("rejects damage deletion when the claim is not pending", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
-    claimRepository.findById.mockResolvedValue(buildClaim({ status: "Finished" }));
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: CLAIM_STATUS.FINISHED }));
 
     const service = createDamageService(claimRepository, damageRepository);
 

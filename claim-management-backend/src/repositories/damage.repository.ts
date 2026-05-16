@@ -4,7 +4,7 @@ import type {
   CreateDamageInput,
   UpdateDamageInput,
 } from "../entities/validators/damage/damage.validator";
-import type { Damage, DamageSeverity } from "../entities/models/damage/damage.model";
+import { DAMAGE_SEVERITY, type Damage, type DamageSeverity } from "../entities/models/damage/damage.model";
 
 export type DamageRecord = {
   _id: string;
@@ -89,7 +89,7 @@ export function createDamageRepository(): DamageRepository {
       };
     },
     async hasHighSeverityByClaimId(claimId: string) {
-      return (await DamageModel.exists({ claimId, severity: "high" }).exec()) !== null;
+      return (await DamageModel.exists({ claimId, severity: DAMAGE_SEVERITY.HIGH }).exec()) !== null;
     },
     async sumPricesByClaimId(claimId: string) {
       const [result] = await DamageModel.aggregate<{ totalAmount: number }>([

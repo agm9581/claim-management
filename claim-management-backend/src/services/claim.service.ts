@@ -2,7 +2,7 @@ import type {
   CreateClaimInput,
   UpdateClaimInput,
 } from "../entities/validators/claim/claim.validator";
-import type { ClaimStatus } from "../entities/models/claim/claim.model";
+import { CLAIM_STATUS, type ClaimStatus } from "../entities/models/claim/claim.model";
 import type { ClaimRepository } from "../repositories/claim.repository";
 import type { DamageRepository } from "../repositories/damage.repository";
 import { BusinessRuleError } from "../utils/business-rule-error";
@@ -13,11 +13,10 @@ export function createClaimService(
 ) {
   async function validateStatusTransition(
     claimId: string,
-    currentStatus: ClaimStatus,
     nextStatus: ClaimStatus,
     nextDescription: string,
   ) {
-    if (nextStatus === "Finished") {
+    if (nextStatus === CLAIM_STATUS.FINISHED) {
       const hasHighSeverityDamage = await damageRepository.hasHighSeverityByClaimId(claimId);
 
       if (!hasHighSeverityDamage) {
@@ -54,7 +53,7 @@ export function createClaimService(
       const nextStatus = data.status ?? existingClaim.status;
       const nextDescription = data.description ?? existingClaim.description;
 
-      await validateStatusTransition(id, existingClaim.status, nextStatus, nextDescription);
+      await validateStatusTransition(id, nextStatus, nextDescription);
 
       return claimRepository.updateById(id, data);
     },

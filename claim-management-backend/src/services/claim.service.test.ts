@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 import { createClaimService } from "./claim.service";
+import { CLAIM_STATUS } from "../entities/models/claim/claim.model";
 import type { ClaimRecord, ClaimRepository } from "../repositories/claim.repository";
 import type { DamageRepository } from "../repositories/damage.repository";
 import type {
@@ -39,7 +40,7 @@ function buildClaim(overrides: Partial<ClaimRecord> = {}): ClaimRecord {
     title: "Existing claim",
     description:
       "This description is intentionally longer than one hundred characters to allow the claim to move into a finished state safely.",
-    status: "In Review",
+    status: CLAIM_STATUS.IN_REVIEW,
     totalAmount: 0,
     createdAt: new Date("2026-05-16T10:00:00.000Z"),
     updatedAt: new Date("2026-05-16T10:00:00.000Z"),
@@ -52,10 +53,10 @@ describe("createClaimService", () => {
   const createClaimInput: CreateClaimInput = {
     title: "Rear bumper collision",
     description: "Low speed parking impact with visible rear bumper damage.",
-    status: "In Review",
+    status: CLAIM_STATUS.IN_REVIEW,
   };
   const updateClaimInput: UpdateClaimInput = {
-    status: "Finished",
+    status: CLAIM_STATUS.FINISHED,
   };
 
   it("lists claims through the repository", async () => {
@@ -92,7 +93,7 @@ describe("createClaimService", () => {
       id: claimId,
       title: createClaimInput.title,
       description: createClaimInput.description,
-      status: createClaimInput.status ?? "Pending",
+      status: createClaimInput.status ?? CLAIM_STATUS.PENDING,
     });
     claimRepository.create.mockResolvedValue(createdClaim);
 
@@ -108,7 +109,7 @@ describe("createClaimService", () => {
     const damageRepository = createDamageRepositoryMock();
     claimRepository.findById.mockResolvedValue(buildClaim());
     damageRepository.hasHighSeverityByClaimId.mockResolvedValue(true);
-    const updatedClaim = buildClaim({ status: "Finished" });
+    const updatedClaim = buildClaim({ status: CLAIM_STATUS.FINISHED });
     claimRepository.updateById.mockResolvedValue(updatedClaim);
 
     const service = createClaimService(claimRepository, damageRepository);
@@ -139,7 +140,7 @@ describe("createClaimService", () => {
 
     const service = createClaimService(claimRepository, damageRepository);
 
-    await expect(service.updateClaim(claimId, { status: "Finished" })).rejects.toThrow(
+    await expect(service.updateClaim(claimId, { status: CLAIM_STATUS.FINISHED })).rejects.toThrow(
       new BusinessRuleError(
         "A claim needs at least one high severity damage before it can be finished",
       ),
@@ -155,7 +156,7 @@ describe("createClaimService", () => {
 
     const service = createClaimService(claimRepository, damageRepository);
 
-    await expect(service.updateClaim(claimId, { status: "Finished" })).rejects.toThrow(
+    await expect(service.updateClaim(claimId, { status: CLAIM_STATUS.FINISHED })).rejects.toThrow(
       new BusinessRuleError(
         "A finished claim with high severity damage requires a description longer than 100 characters",
       ),

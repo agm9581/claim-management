@@ -2,6 +2,7 @@ import type {
   CreateDamageInput,
   UpdateDamageInput,
 } from "../entities/validators/damage/damage.validator";
+import { CLAIM_STATUS } from "../entities/models/claim/claim.model";
 import type { ClaimRepository } from "../repositories/claim.repository";
 import type { DamageRepository } from "../repositories/damage.repository";
 import { BusinessRuleError } from "../utils/business-rule-error";
@@ -22,7 +23,7 @@ export function createDamageService(
       return null;
     }
 
-    if (claim.status !== "Pending") {
+    if (claim.status !== CLAIM_STATUS.PENDING) {
       throw new BusinessRuleError("Damages can only be managed while the claim is pending");
     }
 

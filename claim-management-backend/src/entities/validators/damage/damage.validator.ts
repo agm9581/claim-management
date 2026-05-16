@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DamageSeverity } from "../../models/damage/damage.model";
+import { DAMAGE_SEVERITY_VALUES } from "../../models/damage/damage.model";
 
 export const createDamageSchema = z
   .object({
@@ -9,8 +9,8 @@ export const createDamageSchema = z
       .min(1, "Part is required")
       .max(120, "Part cannot exceed 120 characters"),
 
-    severity: z.enum(DamageSeverity, {
-      error: `Severity must be one of: ${DamageSeverity.join(", ")}`,
+    severity: z.enum(DAMAGE_SEVERITY_VALUES, {
+      error: `Severity must be one of: ${DAMAGE_SEVERITY_VALUES.join(", ")}`,
     }),
 
     imageUrl: z.string().trim().url("Image URL must be valid"),

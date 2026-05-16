@@ -1,7 +1,13 @@
 import mongoose, { InferSchemaType } from "mongoose";
 
-export const ClaimStatus = ["Pending", "In Review", "Finished"] as const;
-export type ClaimStatus = (typeof ClaimStatus)[number];
+export const CLAIM_STATUS = {
+  PENDING: "Pending",
+  IN_REVIEW: "In Review",
+  FINISHED: "Finished",
+} as const;
+
+export const CLAIM_STATUS_VALUES = Object.values(CLAIM_STATUS);
+export type ClaimStatus = (typeof CLAIM_STATUS)[keyof typeof CLAIM_STATUS];
 
 const claimSchema = new mongoose.Schema(
   {
@@ -24,10 +30,10 @@ const claimSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ClaimStatus,
+        values: CLAIM_STATUS_VALUES,
         message: "Status must be one of: Pending, In Review, Finished",
       },
-      default: "Pending",
+      default: CLAIM_STATUS.PENDING,
       required: [true, "Status is required"],
     },
 

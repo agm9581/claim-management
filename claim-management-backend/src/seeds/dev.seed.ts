@@ -1,13 +1,17 @@
-import { ClaimModel } from "../entities/models/claim/claim.model";
-import { DamageModel } from "../entities/models/damage/damage.model";
+import { CLAIM_STATUS, type ClaimStatus, ClaimModel } from "../entities/models/claim/claim.model";
+import {
+  DAMAGE_SEVERITY,
+  type DamageSeverity,
+  DamageModel,
+} from "../entities/models/damage/damage.model";
 
 type SeedClaim = {
   title: string;
   description: string;
-  status: "Pending" | "In Review" | "Finished";
+  status: ClaimStatus;
   damages: Array<{
     part: string;
-    severity: "low" | "mid" | "high";
+    severity: DamageSeverity;
     imageUrl: string;
     price: number;
   }>;
@@ -17,17 +21,17 @@ const seedClaims: SeedClaim[] = [
   {
     title: "Rear bumper collision",
     description: "Low speed parking impact with visible rear bumper and trunk damage.",
-    status: "In Review",
+    status: CLAIM_STATUS.IN_REVIEW,
     damages: [
       {
         part: "Rear bumper",
-        severity: "mid",
+        severity: DAMAGE_SEVERITY.MID,
         imageUrl: "https://images.example.com/claims/rear-bumper.jpg",
         price: 850,
       },
       {
         part: "Trunk lid",
-        severity: "low",
+        severity: DAMAGE_SEVERITY.LOW,
         imageUrl: "https://images.example.com/claims/trunk-lid.jpg",
         price: 420,
       },
@@ -36,23 +40,23 @@ const seedClaims: SeedClaim[] = [
   {
     title: "Front-left side impact",
     description: "Collision on the front-left corner affecting wheel arch and headlight.",
-    status: "Pending",
+    status: CLAIM_STATUS.PENDING,
     damages: [
       {
         part: "Front-left fender",
-        severity: "high",
+        severity: DAMAGE_SEVERITY.HIGH,
         imageUrl: "https://images.example.com/claims/front-left-fender.jpg",
         price: 1400,
       },
       {
         part: "Left headlight",
-        severity: "mid",
+        severity: DAMAGE_SEVERITY.MID,
         imageUrl: "https://images.example.com/claims/left-headlight.jpg",
         price: 680,
       },
       {
         part: "Wheel arch trim",
-        severity: "low",
+        severity: DAMAGE_SEVERITY.LOW,
         imageUrl: "https://images.example.com/claims/wheel-arch-trim.jpg",
         price: 210,
       },

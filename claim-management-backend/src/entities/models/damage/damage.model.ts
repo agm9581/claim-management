@@ -1,7 +1,13 @@
 import mongoose, { InferSchemaType } from "mongoose";
 
-export const DamageSeverity = ["low", "mid", "high"] as const;
-export type DamageSeverity = (typeof DamageSeverity)[number];
+export const DAMAGE_SEVERITY = {
+  LOW: "low",
+  MID: "mid",
+  HIGH: "high",
+} as const;
+
+export const DAMAGE_SEVERITY_VALUES = Object.values(DAMAGE_SEVERITY);
+export type DamageSeverity = (typeof DAMAGE_SEVERITY)[keyof typeof DAMAGE_SEVERITY];
 
 const damageSchema = new mongoose.Schema(
   {
@@ -23,7 +29,7 @@ const damageSchema = new mongoose.Schema(
     severity: {
       type: String,
       enum: {
-        values: DamageSeverity,
+        values: DAMAGE_SEVERITY_VALUES,
         message: "Severity must be one of: low, mid, high",
       },
       required: [true, "Severity is required"],
