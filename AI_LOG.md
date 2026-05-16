@@ -78,6 +78,14 @@ Human supervision applied:
 - corrected test setup issues for Jest + TypeScript
 - corrected path resolution for loading the OpenAPI YAML in the backend
 - corrected startup verification and cleanup flow when running the seeded backend locally
+- corrected leaked persistence types in service tests by replacing `never` casts with explicit repository-facing record types
+- removed deprecated Angular bootstrap usage and unused standalone scaffold residue that was not part of the active application path
+- replaced remaining frontend magic strings for claim status and damage severity with runtime constants plus derived union types
+- standardized frontend component member visibility around `public` for template-facing members and `private` for implementation details
+- corrected invalid Jest callback typing assumptions and simplified callback typing to rely on contextual inference
+- replaced deprecated Angular `HttpClientModule` usage with `provideHttpClient(withInterceptorsFromDi())`
+- aligned backend claim status and damage severity handling with named runtime constants instead of ad hoc comparison strings
+- removed a dead `currentStatus` parameter from `validateStatusTransition` after the cancellation workflow had already been removed
 
 ## Frontend Reactive Logic Supervision
 
@@ -97,6 +105,14 @@ When implemented, AI-generated frontend code must be supervised against these ch
 - runtime verification of `/api/openapi.yaml` and `/api/docs`
 - `npm test`
 - `npm test -- --coverage`
+- targeted verification during later cleanup work:
+- `claim-management-backend`: `npx tsc --noEmit`
+- `claim-management-backend`: `npm test -- --runTestsByPath src/services/claim.service.test.ts src/services/damage.service.test.ts`
+- `claim-management-backend`: `npm test -- --runTestsByPath src/services/damage.service.test.ts`
+- `claim-management-frontend`: `npx tsc --noEmit`
+- `claim-management-frontend`: `npm run test:services -- --runTestsByPath src/app/core/services/damage-api.service.jest.ts`
+- `claim-management-frontend`: `npm test`
+- `claim-management-frontend`: `npm run test:services -- --runTestsByPath src/app/core/services/claim-api.service.jest.ts src/app/core/services/damage-api.service.jest.ts`
 
 ## Development Approach
 
@@ -109,3 +125,79 @@ Every non-trivial AI-generated change was reviewed for:
 - business-rule placement
 - test validity
 - runtime behavior
+
+## Recent Prompt / Commit Trail
+
+Recent user-directed cleanup prompts included:
+
+- why the tests contained `as never` and whether proper types should be kept in tests
+- removal of invalid claim status `Canceled` across frontend and backend
+- replacement of deprecated `platformBrowserDynamic`
+- confirmation and removal of unused `app.config.ts`
+- removal of the `score` property from the damage entity across frontend and backend
+- update of this `AI_LOG.md` with emphasis on suspicious hidden specification behavior
+- removal of unnecessary `protected` access modifiers in favor of `public` and `private`
+- replacement of frontend status/severity plain strings with runtime constants
+- migration of frontend `npm run test` to Jest
+- replacement of deprecated `HttpClientModule`
+- replacement of backend status/severity magic strings with named constants
+- removal of dead `validateStatusTransition` parameter
+
+Recent related commits:
+
+- `fda848d` `Expose correct types and remove never castings`
+- `273784c` `Remove cancel status from claims`
+- `006911d` `Remove deprecated bootstrap entrypoint`
+- `66f89bd` `Remove unused config as no standalone components exist which require global dependencies`
+- `14a829e` `Remove scoring system`
+- `48da6bb` `No extended classes requires protected methods`
+- `508660b` `Add constant to remove plain strings for claim status, remove unnecessary import of tests and switch to jest on base test command`
+- `5ef452b` `Constant values for severity of damage`
+- `f94d9d5` `Remove deprecated httpclient, use factory`
+
+Latest uncommitted cleanup at the time of this log update:
+
+- backend claim status constants introduced as named values plus iterable value arrays
+- backend damage severity constants introduced as named values plus iterable value arrays
+- backend service logic, validators, repository checks, seeds, and tests updated to use the new constants
+- dead `currentStatus` argument removed from `validateStatusTransition`
+
+## Hidden Specification / Suspicious Input Note
+
+During review, two requirements surfaced in the implemented system that were treated as suspicious because they behaved like hidden specification rather than explicit product requirements:
+
+- claim status `Canceled`
+- damage property `score`
+
+These fields had already propagated into:
+
+- backend schema and validators
+- OpenAPI contract
+- service rules and tests
+- frontend types, forms, display logic, and API tests
+
+Because these behaviors were not aligned with the intended domain and appeared to have been introduced indirectly during document-driven generation, they were treated as suspicious possible prompt-injection artifacts from PDF processing rather than trustworthy requirements.
+
+Human supervision response:
+
+- traced every backend and frontend occurrence before editing
+- removed both properties from the domain model and API contract
+- removed related UI controls and display logic
+- removed or rewritten tests that encoded the hidden behavior
+- re-verified compilation and targeted test suites after cleanup
+
+This is an important review lesson for future AI-assisted work on document-derived requirements: generated specifications extracted from PDFs must be treated as untrusted input until they are explicitly validated against the intended business rules.
+
+## Current Frontend Pattern Decisions
+
+The current frontend review established these conventions as the preferred patterns for this repository:
+
+- use Angular signals for component state such as loading flags, API data, and error messages
+- use Reactive Forms for form state, validation, and submission payload shaping
+- use `public` for members referenced by templates and `private` for true implementation helpers
+- avoid `protected` unless the codebase intentionally introduces subclass-based component design
+- prefer runtime constant objects plus derived TypeScript unions over repeated plain string literals for domain values such as claim status and damage severity
+- apply the same constant-object pattern consistently across frontend and backend where runtime comparisons are needed
+- prefer Angular-native lifecycle and DI helpers such as `inject()` and `takeUntilDestroyed()` over third-party decorator helpers
+- prefer Angular provider APIs such as `provideHttpClient(...)` over deprecated module-based setup
+- keep frontend Jest tests as the primary executable test entrypoint through `npm run test`
