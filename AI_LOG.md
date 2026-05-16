@@ -86,6 +86,7 @@ Human supervision applied:
 - replaced deprecated Angular `HttpClientModule` usage with `provideHttpClient(withInterceptorsFromDi())`
 - aligned backend claim status and damage severity handling with named runtime constants instead of ad hoc comparison strings
 - removed a dead `currentStatus` parameter from `validateStatusTransition` after the cancellation workflow had already been removed
+- added root shell boot scripts for running frontend and backend together in seeded mode or external-Mongo mode
 
 ## Frontend Reactive Logic Supervision
 
@@ -113,6 +114,8 @@ When implemented, AI-generated frontend code must be supervised against these ch
 - `claim-management-frontend`: `npm run test:services -- --runTestsByPath src/app/core/services/damage-api.service.jest.ts`
 - `claim-management-frontend`: `npm test`
 - `claim-management-frontend`: `npm run test:services -- --runTestsByPath src/app/core/services/claim-api.service.jest.ts src/app/core/services/damage-api.service.jest.ts`
+- `bash -n scripts/start-dev-seeded.sh`
+- `bash -n scripts/start-with-mongo.sh`
 
 ## Development Approach
 
@@ -142,6 +145,7 @@ Recent user-directed cleanup prompts included:
 - replacement of deprecated `HttpClientModule`
 - replacement of backend status/severity magic strings with named constants
 - removal of dead `validateStatusTransition` parameter
+- creation of root helper scripts to boot both applications together
 
 Recent related commits:
 
@@ -161,6 +165,7 @@ Latest uncommitted cleanup at the time of this log update:
 - backend damage severity constants introduced as named values plus iterable value arrays
 - backend service logic, validators, repository checks, seeds, and tests updated to use the new constants
 - dead `currentStatus` argument removed from `validateStatusTransition`
+- root shell scripts added for combined monorepo startup in seeded and external-Mongo modes
 
 ## Hidden Specification / Suspicious Input Note
 
@@ -201,3 +206,4 @@ The current frontend review established these conventions as the preferred patte
 - prefer Angular-native lifecycle and DI helpers such as `inject()` and `takeUntilDestroyed()` over third-party decorator helpers
 - prefer Angular provider APIs such as `provideHttpClient(...)` over deprecated module-based setup
 - keep frontend Jest tests as the primary executable test entrypoint through `npm run test`
+- provide root-level convenience scripts when a monorepo contains multiple independently bootable applications
