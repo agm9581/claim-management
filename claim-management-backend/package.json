@@ -5,6 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "test": "jest --runInBand",
+    "test:integration": "jest --runInBand --config jest.integration.config.cjs",
+    "test:all": "npm test && npm run test:integration",
     "start": "tsx src/index.ts",
     "dev:seed": "tsx src/index.ts --dev-seed"
   },

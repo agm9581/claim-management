@@ -15,7 +15,7 @@ echo "Running frontend tests..."
 echo "Running backend tests..."
 (
   cd "$BACKEND_DIR"
-  npm test
+  npm run test:all
 )
 
 echo "Pre-commit test check passed."
