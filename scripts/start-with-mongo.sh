@@ -96,6 +96,9 @@ echo "Starting backend with external MongoDB connection..."
 ) &
 backend_pid="$!"
 
+echo "Frontend startup note: Angular is launched with the local project CLI via:"
+echo "  cd claim-management-frontend && npm start"
+echo "If frontend boot fails, check Node.js compatibility and local dependency installation first."
 echo "Starting frontend..."
 (
   cd "$FRONTEND_DIR"
