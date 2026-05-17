@@ -1,36 +1,13 @@
 # Claim Management
 
-Monorepo for a claim-management system with:
+Monorepo with:
 
 - `claim-management-backend`: Express + TypeScript + MongoDB
 - `claim-management-frontend`: Angular + TypeScript
 
-The application manages insurance-style claims and nested damages, with workflow rules enforced in the backend and a simple Angular UI for list/detail management.
+The app manages claims and nested damages, with workflow rules enforced in the backend and a small Angular UI for list and detail flows.
 
-## Table of Contents
-
-- Overview
-- Repository Structure
-- Tech Stack
-- Prerequisites
-- Quick Start
-- Running the Backend
-- Running the Frontend
-- API and Docs
-- Testing
-- Git Hooks
-- Development Notes
-
-## Overview
-
-This repository is organized as a lightweight monorepo with two independent applications:
-
-- the backend exposes a REST API under `/api`
-- the frontend consumes that API from `http://localhost:3000/api`
-
-There is no root workspace runner today. Commands are executed inside each application folder.
-
-## Repository Structure
+## Repository Layout
 
 ```text
 claim-management/
@@ -39,287 +16,151 @@ claim-management/
 ├── .githooks/
 ├── scripts/
 ├── claim-management-backend/
-│   ├── openapi.yaml
-│   ├── package.json
-│   └── src/
 └── claim-management-frontend/
-    ├── package.json
-    └── src/
 ```
 
-## Tech Stack
-
-### Backend
-
-- Node.js
-- TypeScript
-- Express
-- Mongoose
-- Zod
-- Swagger UI
-- Jest
-
-### Frontend
-
-- Angular
-- TypeScript
-- Bootstrap
-- Jest
-
-## Prerequisites
+## Requirements
 
 - Node.js `^20.19.0 || ^22.12.0 || >=24.0.0`
-- recommended local version: `22.22.0`
 - npm
 
-If you use `nvm`, the repository includes [.nvmrc](/Users/antoniogonzalez/Documents/repo/claim-management/.nvmrc:1):
+Recommended local version:
 
 ```bash
 nvm use
 ```
 
-For normal backend startup, you also need:
+The repository includes [.nvmrc](/Users/antoniogonzalez/Documents/repo/claim-management/.nvmrc:1) with `22.22.0`.
 
-- a MongoDB instance
-- `MONGODB_URI` configured in your environment or `.env`
+For normal backend startup, you also need a MongoDB connection through `MONGODB_URI` or `MONGO_URI`.
 
 ## Quick Start
 
-Recommended local development flow:
+Fastest path with seeded data:
 
-1. Install backend dependencies.
-2. Install frontend dependencies.
-3. Start the backend.
-4. Start the frontend.
-5. Open the Angular app in the browser.
+```bash
+bash scripts/start-dev-seeded.sh
+```
 
-### 1. Install dependencies
+Real MongoDB mode:
+
+```bash
+MONGODB_URI="mongodb://localhost:27017/claim-management" bash scripts/start-with-mongo.sh
+```
+
+Both scripts:
+
+- enforce the supported Node.js version
+- install dependencies automatically when `node_modules` is missing
+- start backend and frontend together
+- stop both processes when interrupted
+
+If the frontend fails, the first manual check is:
+
+```bash
+cd claim-management-frontend
+npm start
+```
+
+That runs Angular through the local project install, not a global CLI.
+
+## Local URLs
+
+- Frontend: `http://localhost:4200`
+- Backend API: `http://localhost:3000/api`
+- Swagger UI: `http://localhost:3000/api/docs`
+- OpenAPI spec: `http://localhost:3000/api/openapi.yaml`
+
+## Manual Commands
 
 Backend:
 
 ```bash
 cd claim-management-backend
-npm install
+npm start
+```
+
+Seeded backend:
+
+```bash
+cd claim-management-backend
+npm run dev:seed
 ```
 
 Frontend:
 
 ```bash
-cd ../claim-management-frontend
-npm install
-```
-
-### 2. Start the backend
-
-Option A: run against a real MongoDB instance
-
-```bash
-cd claim-management-backend
-MONGODB_URI="mongodb://localhost:27017/claim-management" npm start
-```
-
-Option B: run with an ephemeral in-memory MongoDB and seed sample data
-
-```bash
-cd claim-management-backend
-npm run dev:seed
-```
-
-### 3. Start both applications together
-
-From the repository root, two helper scripts are available:
-
-Seeded in-memory backend + frontend:
-
-```bash
-./scripts/start-dev-seeded.sh
-```
-
-External MongoDB backend + frontend:
-
-```bash
-MONGODB_URI="mongodb://localhost:27017/claim-management" ./scripts/start-with-mongo.sh
-```
-
-These scripts:
-
-- fail early if the local Node.js version is not supported
-- install dependencies automatically when `node_modules` is missing
-- start backend and frontend together
-- print the main local URLs
-- stop both processes when you interrupt the script
-
-### 4. Start the frontend
-
-```bash
 cd claim-management-frontend
 npm start
 ```
-
-By default, the frontend expects the backend at:
-
-- `http://localhost:3000/api`
-
-Angular dev server typically runs at:
-
-- `http://localhost:4200`
-
-## Running the Backend
-
-### Standard mode
-
-Runs the Express API using `MONGODB_URI`:
-
-```bash
-cd claim-management-backend
-npm start
-```
-
-Behavior:
-
-- starts Express on `PORT` or `3000`
-- connects to MongoDB using `MONGODB_URI` or `MONGO_URI`
-- serves Swagger docs and OpenAPI
-
-### Seeded development mode
-
-```bash
-cd claim-management-backend
-npm run dev:seed
-```
-
-Behavior:
-
-- starts an ephemeral in-memory MongoDB instance
-- reseeds sample claims and damages
-- starts the API server
-
-This is the fastest way to boot the project locally if you just want working data without managing a database yourself.
-
-### Root boot scripts
-
-If you want to boot both applications together from the monorepo root:
-
-- `./scripts/start-dev-seeded.sh`
-- `./scripts/start-with-mongo.sh`
-
-## Running the Frontend
-
-```bash
-cd claim-management-frontend
-npm start
-```
-
-Behavior:
-
-- starts the Angular development server
-- points API calls to `http://localhost:3000/api`
-
-## API and Docs
-
-Once the backend is running:
-
-- Swagger UI: `http://localhost:3000/api/docs`
-- Raw OpenAPI spec: `http://localhost:3000/api/openapi.yaml`
-
-Main API areas:
-
-- `claims`
-- nested `damages` under each claim
 
 ## Testing
 
-### Backend tests
+Frontend:
+
+```bash
+cd claim-management-frontend
+npm test
+```
+
+Backend unit tests:
 
 ```bash
 cd claim-management-backend
 npm test
 ```
 
-### Frontend tests
+Backend integration tests:
 
 ```bash
-cd claim-management-frontend
-npm test
+cd claim-management-backend
+npm run test:integration
 ```
 
-Current frontend default test command runs Jest.
-
-There is also an Angular CLI test command available if needed:
+Full backend validation:
 
 ```bash
-cd claim-management-frontend
-npm run test:ng
+cd claim-management-backend
+npm run test:all
 ```
 
-### Type checking
-
-Backend:
+Type checking:
 
 ```bash
 cd claim-management-backend
 npx tsc --noEmit
-```
 
-Frontend:
-
-```bash
-cd claim-management-frontend
+cd ../claim-management-frontend
 npx tsc --noEmit
 ```
 
 ## Git Hooks
 
-This repository includes a versioned pre-commit hook that runs both test suites before a commit is accepted.
+The repository includes a versioned pre-commit hook at [.githooks/pre-commit](/Users/antoniogonzalez/Documents/repo/claim-management/.githooks/pre-commit:1).
 
-Hook entrypoint:
-
-- `.githooks/pre-commit`
-
-Underlying script:
-
-- `scripts/run-tests-before-commit.sh`
-
-What it runs:
+It runs:
 
 - frontend `npm test`
-- backend `npm test`
+- backend `npm run test:all`
 
-If either fails, the commit is blocked.
-
-If your local clone is not yet using the versioned hooks path, configure it once from the repo root:
+If your clone is not using the versioned hooks path yet:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-## Development Notes
+## Architecture Notes
 
-### Architecture
+- Backend uses router -> service -> repository separation.
+- Business rules live in services.
+- Frontend uses Angular signals for page state and Reactive Forms for form state.
+- Runtime constants are used for domain values such as claim status and damage severity.
 
-Backend:
+## AI Usage
 
-- router -> service -> repository separation
-- business rules enforced in services
-- persistence details isolated in repositories
-
-Frontend:
-
-- Angular signals for page/component state
-- Reactive Forms for form state and validation
-- runtime constants used for domain values such as claim status and damage severity
-
-### Current conventions
-
-- use `public` for members referenced by Angular templates
-- use `private` for implementation-only helpers
-- prefer Angular-native APIs such as `inject()`, `takeUntilDestroyed()`, and `provideHttpClient(...)`
-
-### AI usage log
-
-See [AI_LOG.md](./AI_LOG.md) for:
+See [AI_LOG.md](/Users/antoniogonzalez/Documents/repo/claim-management/AI_LOG.md:1) for:
 
 - how AI assistance was used
-- what was reviewed manually
-- recent cleanup and architectural decisions
-- suspicious hidden-specification findings that were removed after review
+- what was manually reviewed
+- testing and coverage supervision
+- hidden-specification cleanup decisions
