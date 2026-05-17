@@ -18,6 +18,19 @@ require_command() {
   fi
 }
 
+require_supported_node() {
+  local node_version
+  node_version="$(node -p 'process.versions.node')"
+
+  if ! node -e 'const [major, minor] = process.versions.node.split(".").map(Number); process.exit(((major === 20 && minor >= 19) || (major === 22 && minor >= 12) || major >= 24) ? 0 : 1)'; then
+    echo "Unsupported Node.js version: $node_version"
+    echo "This repository requires Node.js ^20.19.0 || ^22.12.0 || >=24.0.0."
+    echo "Recommended local version: 22.22.0"
+    echo "If you use nvm, run: nvm use"
+    exit 1
+  fi
+}
+
 install_dependencies_if_missing() {
   local app_dir="$1"
   local app_name="$2"
@@ -53,6 +66,7 @@ trap cleanup EXIT INT TERM
 
 require_command node
 require_command npm
+require_supported_node
 
 install_dependencies_if_missing "$BACKEND_DIR" "claim-management-backend"
 install_dependencies_if_missing "$FRONTEND_DIR" "claim-management-frontend"

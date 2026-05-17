@@ -68,8 +68,15 @@ claim-management/
 
 ## Prerequisites
 
-- Node.js 20+ recommended
+- Node.js `^20.19.0 || ^22.12.0 || >=24.0.0`
+- recommended local version: `22.22.0`
 - npm
+
+If you use `nvm`, the repository includes [.nvmrc](/Users/antoniogonzalez/Documents/repo/claim-management/.nvmrc:1):
+
+```bash
+nvm use
+```
 
 For normal backend startup, you also need:
 
@@ -136,6 +143,8 @@ MONGODB_URI="mongodb://localhost:27017/claim-management" ./scripts/start-with-mo
 
 These scripts:
 
+- fail early if the local Node.js version is not supported
+- install dependencies automatically when `node_modules` is missing
 - start backend and frontend together
 - print the main local URLs
 - stop both processes when you interrupt the script
