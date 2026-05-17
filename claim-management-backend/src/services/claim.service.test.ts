@@ -119,6 +119,28 @@ describe("createClaimService", () => {
     expect(claim).toBe(updatedClaim);
   });
 
+  it("updates a non-finished claim without checking high severity damage", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    const updateInput: UpdateClaimInput = {
+      status: CLAIM_STATUS.IN_REVIEW,
+      title: "Adjusted claim title",
+    };
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: CLAIM_STATUS.IN_REVIEW }));
+    const updatedClaim = buildClaim({
+      status: CLAIM_STATUS.IN_REVIEW,
+      title: updateInput.title!,
+    });
+    claimRepository.updateById.mockResolvedValue(updatedClaim);
+
+    const service = createClaimService(claimRepository, damageRepository);
+    const claim = await service.updateClaim(claimId, updateInput);
+
+    expect(damageRepository.hasHighSeverityByClaimId).not.toHaveBeenCalled();
+    expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, updateInput);
+    expect(claim).toBe(updatedClaim);
+  });
+
   it("returns null when the claim to update does not exist", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
@@ -130,6 +152,28 @@ describe("createClaimService", () => {
     expect(claimRepository.findById).toHaveBeenCalledWith(claimId);
     expect(claimRepository.updateById).not.toHaveBeenCalled();
     expect(claim).toBeNull();
+  });
+
+  it("uses the existing status when updating only the description", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    const updateInput: UpdateClaimInput = {
+      description:
+        "Updated description that still remains longer than one hundred characters to preserve the finished-claim validation behavior cleanly.",
+    };
+    claimRepository.findById.mockResolvedValue(buildClaim({ status: CLAIM_STATUS.IN_REVIEW }));
+    const updatedClaim = buildClaim({
+      status: CLAIM_STATUS.IN_REVIEW,
+      description: updateInput.description!,
+    });
+    claimRepository.updateById.mockResolvedValue(updatedClaim);
+
+    const service = createClaimService(claimRepository, damageRepository);
+    const claim = await service.updateClaim(claimId, updateInput);
+
+    expect(damageRepository.hasHighSeverityByClaimId).not.toHaveBeenCalled();
+    expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, updateInput);
+    expect(claim).toBe(updatedClaim);
   });
 
   it("allows finishing a claim without a high severity damage", async () => {
@@ -146,6 +190,30 @@ describe("createClaimService", () => {
     expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, {
       status: CLAIM_STATUS.FINISHED,
     });
+    expect(claim).toBe(updatedClaim);
+  });
+
+  it("uses the new description when finishing a claim with high severity damage", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    const updateInput: UpdateClaimInput = {
+      status: CLAIM_STATUS.FINISHED,
+      description:
+        "This updated description is intentionally longer than one hundred characters so the finished claim remains valid after the status change is applied.",
+    };
+    claimRepository.findById.mockResolvedValue(buildClaim({ description: "Old description" }));
+    damageRepository.hasHighSeverityByClaimId.mockResolvedValue(true);
+    const updatedClaim = buildClaim({
+      status: CLAIM_STATUS.FINISHED,
+      description: updateInput.description!,
+    });
+    claimRepository.updateById.mockResolvedValue(updatedClaim);
+
+    const service = createClaimService(claimRepository, damageRepository);
+    const claim = await service.updateClaim(claimId, updateInput);
+
+    expect(damageRepository.hasHighSeverityByClaimId).toHaveBeenCalledWith(claimId);
+    expect(claimRepository.updateById).toHaveBeenCalledWith(claimId, updateInput);
     expect(claim).toBe(updatedClaim);
   });
 

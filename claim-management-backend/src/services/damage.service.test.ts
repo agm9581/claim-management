@@ -187,6 +187,20 @@ describe("createDamageService", () => {
     expect(damage).toBeNull();
   });
 
+  it("returns null when updating a damage for a missing claim", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue(null);
+
+    const service = createDamageService(claimRepository, damageRepository);
+    const damage = await service.updateDamage(claimId, damageId, updateDamageInput);
+
+    expect(damageRepository.updateByIdAndClaimId).not.toHaveBeenCalled();
+    expect(damageRepository.sumPricesByClaimId).not.toHaveBeenCalled();
+    expect(claimRepository.updateTotalAmount).not.toHaveBeenCalled();
+    expect(damage).toBeNull();
+  });
+
   it("deletes a damage and syncs the claim total amount when the damage exists", async () => {
     const claimRepository = createClaimRepositoryMock();
     const damageRepository = createDamageRepositoryMock();
@@ -215,6 +229,20 @@ describe("createDamageService", () => {
     const damage = await service.deleteDamage(claimId, damageId);
 
     expect(damageRepository.deleteByIdAndClaimId).toHaveBeenCalledWith(damageId, claimId);
+    expect(damageRepository.sumPricesByClaimId).not.toHaveBeenCalled();
+    expect(claimRepository.updateTotalAmount).not.toHaveBeenCalled();
+    expect(damage).toBeNull();
+  });
+
+  it("returns null when deleting a damage for a missing claim", async () => {
+    const claimRepository = createClaimRepositoryMock();
+    const damageRepository = createDamageRepositoryMock();
+    claimRepository.findById.mockResolvedValue(null);
+
+    const service = createDamageService(claimRepository, damageRepository);
+    const damage = await service.deleteDamage(claimId, damageId);
+
+    expect(damageRepository.deleteByIdAndClaimId).not.toHaveBeenCalled();
     expect(damageRepository.sumPricesByClaimId).not.toHaveBeenCalled();
     expect(claimRepository.updateTotalAmount).not.toHaveBeenCalled();
     expect(damage).toBeNull();

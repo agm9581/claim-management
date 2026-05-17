@@ -61,6 +61,7 @@ Current backend test result at the time of writing:
 
 - `npm test -- --coverage`
 - service-layer coverage currently reports 100% for the tested service files
+- backend unit-test coverage currently reports 100% statements, 100% branches, 100% functions, and 100% lines
 
 ### 4. OpenAPI / SDD usage
 
@@ -105,6 +106,7 @@ The frontend reactive claim-detail flow required by the case is implemented and 
 - runtime verification of `/api/openapi.yaml` and `/api/docs`
 - `npm test`
 - `npm test -- --coverage`
+- backend unit-test coverage verified at `100%` across statements, branches, functions, and lines
 - targeted verification during later cleanup work:
 - `claim-management-backend`: `npx tsc --noEmit`
 - `claim-management-backend`: `npm test -- --runTestsByPath src/services/claim.service.test.ts src/services/damage.service.test.ts`
